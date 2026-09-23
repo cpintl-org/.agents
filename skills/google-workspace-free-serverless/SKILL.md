@@ -72,10 +72,13 @@ Keep provider identity, display name, slug, canonical locator, and endpoint temp
 - `references/implementation-patterns.md`: account-aware quotas, integration patterns, security, and recovery.
 - `references/pdf-architecture-audit.md`: claim-by-claim audit of the supplied architecture.
 - `references/pdf-source-extract.txt`: supplied source extract for traceability only.
+- `references/ai-adapter-pattern.md`: provider-neutral AI contract, redaction, review, and no-AI fallback.
+- `references/telemetry-and-migration.md`: quota telemetry, migration triggers, and staged migration sequence.
 - `scripts/verify_free_matrix.py`: deterministic completeness check; it performs no network calls and needs no credentials.
 - `templates/component-matrix.csv`: reusable evidence and dependency register.
 - `templates/architecture-decision-record.md`: decision, evidence, risk, and migration record.
 - `templates/verification-checklist.md`: pre-launch and change-review checklist.
+- `templates/account-boundary.yaml`: account, billing, sensitivity, and verification intake form.
 
 ## Enhancement roadmap
 

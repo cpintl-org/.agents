@@ -201,6 +201,10 @@ As a no-coder maintainer or contributor, follow these simple rules to keep the s
 2. **Never Rename Folders Directly in Google Drive**: If you want to rename a folder, do it here in GitHub so the background links don't break.
 3. **Use Simple English**: Write all prompts and guides clearly so anyone on your team can understand and update them!
 
+### Main-only repository workflow
+
+The permanent source of truth is the [`main` branch](https://github.com/cpintl-org/.agents/tree/main). Temporary working branches may be created automatically for a change, but they are removed after the change is merged. Automatic checks run for pull requests, updates to `main`, manual runs, and a weekly health check. No-coder maintenance instructions are in [`docs/no-coder-maintenance.md`](docs/no-coder-maintenance.md).
+
 ---
 
 *Managed by `cpintl-org` — Powering Next-Generation No-Code & AI Workflows.*

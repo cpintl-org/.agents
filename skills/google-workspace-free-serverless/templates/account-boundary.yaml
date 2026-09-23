@@ -1,0 +1,20 @@
+# Complete this form before designing the system.
+accountType: consumer-google-account
+workspaceEdition: unknown
+firebasePlan: not-used
+githubPlan: free
+billingEnabled: unknown
+paymentMethodAttached: unknown
+ownerRole: '{role-or-team}'
+recoveryContactRole: '{role-or-team}'
+dataClassification: restricted
+sensitiveDataAllowed: false
+aiAllowed: false
+strictZeroBilling: true
+manualFallbackRequired: true
+firstMigrationTrigger: '{measurable-limit-or-governance-condition}'
+verifiedOn: '{YYYY-MM-DD}'
+verificationSources:
+  - '{official-source-url}'
+openQuestions:
+  - '{question-that-changes-the-architecture}'

@@ -1,0 +1,83 @@
+name: Validate agent skills
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skill-validation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate skill packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install validation dependency
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Validate skill metadata and references
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          skills=(skills/*/SKILL.md)
+          test "${#skills[@]}" -gt 0
+          for skill_file in "${skills[@]}"; do
+            skill_dir="${skill_file%/SKILL.md}"
+            python - <<'PY' "$skill_file"
+          import pathlib, sys, yaml
+          path = pathlib.Path(sys.argv[1])
+          text = path.read_text(encoding="utf-8")
+          if not text.startswith("---\n") or "\nname:" not in text or "\ndescription:" not in text:
+              raise SystemExit(f"invalid skill frontmatter: {path}")
+          if len(text.splitlines()) >= 500:
+              raise SystemExit(f"SKILL.md must remain under 500 lines: {path}")
+          yaml.safe_load(text.split("---\n", 2)[1])
+          print(f"metadata OK: {path}")
+          PY
+            while IFS= read -r ref; do
+              case "$ref" in
+                references/*|scripts/*|templates/*)
+                  test -e "$skill_dir/$ref" || { echo "missing bundled resource: $skill_dir/$ref"; exit 1; }
+                  ;;
+              esac
+            done < <(grep -oE '(references|scripts|templates)/[A-Za-z0-9_./-]+' "$skill_file" | sort -u || true)
+          done
+
+      - name: Run bundled free-matrix checker
+        run: python skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
+
+      - name: Check for secrets and unsafe paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE 'AKIA[0-9A-Z]{16}|BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}' skills; then
+            echo 'Potential credential pattern found in skills.'
+            exit 1
+          fi
+          if find skills -type f \( -name '*..*' -o -path '*/../*' \) | grep -q .; then
+            echo 'Unsafe traversal-like path found.'
+            exit 1
+          fi
+
+      - name: Check repository whitespace
+        run: git diff --check

@@ -20,12 +20,15 @@ contents:
     - references/implementation-patterns.md
     - references/pdf-architecture-audit.md
     - references/pdf-source-extract.txt
+    - references/ai-adapter-pattern.md
+    - references/telemetry-and-migration.md
   scripts:
     - scripts/verify_free_matrix.py
   templates:
     - templates/component-matrix.csv
     - templates/architecture-decision-record.md
     - templates/verification-checklist.md
+    - templates/account-boundary.yaml
 security:
   secrets_included: false
   real_provider_ids_included: false
