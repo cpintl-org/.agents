@@ -1,0 +1,1022 @@
+Architecture of an Autonomous NGO
+Operations System Within the Google
+Workspace Ecosystem
+Architectural Foundations and Operational Model
+Operating an enterprise-grade Non-Governmental Organization (NGO) software ecosystem
+without external cloud infrastructure—such as standalone Google Cloud Platform (GCP)
+projects, Amazon Web Services, or Microsoft Azure—requires rearchitecting Google Workspace
+into an integrated platform-as-a-service (PaaS) and database-as-a-service (DBaaS). In this
+serverless topology, Google Drive operates as a globally distributed object storage layer, Google
+Sheets serves as an indexed relational datastore, and Google Apps Script (GAS) provides an
+event-driven serverless compute runtime.
+Traditional cloud components are mapped directly to native Workspace primitives. Relational
+tables become structured worksheets, cron schedulers become Apps Script time-driven triggers,
+compute containers become V8 script instances, and web gateways become managed Web
+App deployments. The browser presentation tier is delivered through Google Sites hosting
+single-page applications (SPAs) embedded via Apps Script HTML services. System
+integrations, field dispatching, automated stakeholder messaging, and intelligence pipelines
+execute through native Workspace APIs and Google AI Studio endpoints.
+This design eliminates recurring infrastructure costs, operational software licensing, and
+administrative overhead beyond standard Google Workspace licenses. Achieving
+enterprise-grade reliability, however, requires working within the architectural boundaries of
+Google Workspace. System designs must account for strict quota limits, non-configurable
+execution timeouts, unique cross-origin resource sharing (CORS) behaviors, and specialized
+iframe sandboxing models.
+
+File System and Storage Tier: Drive Internals and
+Content Delivery
+Google Drive functions as an object store that references files through unique, immutable
+alphanumeric strings rather than traditional hierarchical POSIX file paths. Within the Apps Script
+runtime, files are encapsulated inside binary Blob objects. When data is ingested—such as
+identity documents, grant applications, donation receipts, or medical logs—Drive automatically
+calculates checksums, detects MIME types, and indexes metadata. File types that lack an
+explicit Content-Type header are designated as application/octet-stream. Conversely, structured
+JSON models, vector assets, and web media preserve their declared MIME signatures
+throughout their storage lifecycle.
+Drive does not support in-place byte-level mutation. Mutating an existing record requires
+streaming a complete replacement blob or creating an explicit new file revision. For high-volume
+file pipelines, systems must use chunked multipart uploads or append-by-versioning strategies
+to avoid memory exhaustion in both client and server runtimes.
+Historically, static web hosting on Google Drive relied on direct public web delivery endpoints.
+When Google deprecated native folder hosting, developers shifted to the
+https://drive.google.com/uc?export=view&id={file_id} redirection pattern. However, modern
+browser privacy policies and the widespread phase-out of third-party cookies have
+compromised this delivery path.
+When assets are accessed through the legacy uc endpoint, Google's reverse proxy evaluates
+user session cookies. When a browser blocks third-party cookie transmission, the storage
+gateway fails to authenticate access, returning broken image displays, continuous redirect
+loops, or HTTP 403 Forbidden errors.
+To deliver web-ready static assets—including user interface scripts, cascading stylesheets,
+vector icons, and static assets—into external client browsers or embedded frames, architectures
+must use Google's distributed user-content edge nodes:
+URL Endpoint Format                Delivery Pattern                Header and Cache Behavior
+https://lh3.googleusercontent.c Static image and binary            Bypasses third-party cookie
+om/d/{file_id}                     rendering                       requirements; returns direct
+                                                                   binary payloads cached
+                                                                   globally across edge nodes.
+https://lh3.googleusercontent.c Dynamic asset resizing             Generates scaled asset
+om/d/{file_id}=s{size}                                             variants on the fly (e.g., =s400)
+                                                                   to minimize network bandwidth.
+https://drive.google.com/thumb Raster and vector thumbnail         High-availability caching;
+nail?id={file_id}&sz=w{width} previews                             automatically rasterizes
+                                                                   complex multi-page PDFs,
+                                                                   slides, and vector files into
+                                                                   lightweight images.
+https://drive.usercontent.google Direct binary downloads           Emits Content-Disposition:
+.com/download?id={file_id}                                         attachment; headers; bypasses
+                                                                   web viewer wrappers.
+https://script.googleusercontent Dynamic script/JSON payloads The target of an HTTP 302
+.com/macros/echo?...               via Apps Script Web App         redirect from script executions;
+                                                                   provides permissive
+                                                                   cross-origin access on GET
+                                                                   requests.
+When assets are stored in a Shared Drive with permissions set to "Anyone with the link can
+view", client applications can extract the corresponding file ID and map it directly to
+lh3.googleusercontent.com/d/{file_id}. This routes delivery through Google's distributed cache,
+ensuring low latency in production web environments.
+Cross-origin interactions introduce distinct constraints. Requests sent directly to
+drive.google.com do not include permissive Access-Control-Allow-Origin headers and enforce
+X-Frame-Options: SAMEORIGIN policies. As a result, direct client-side XMLHttpRequests or
+fetch invocations against raw Drive URLs fail.
+Drive also strips HTTP Range headers (Accept-Ranges: bytes) across its public distribution
+endpoints, which prevents media seeking and dynamic binary streaming.
+Consequently, client applications cannot fetch structured configuration files, raw CSV datasets,
+or spatial vectors directly from raw Drive endpoints. Instead, access must be brokered through
+an Apps Script Web App acting as a CORS proxy gateway, or loaded directly in memory by
+client runtimes executing within the same domain scope.
+
+Database and Persistence Architecture
+Operating an NGO system requires strong data persistence across constituent management,
+donation accounting, grant records, field dispatching, and inventory. Without an external SQL
+engine, the Workspace environment utilizes a multi-tiered data storage pattern.
+Google Sheets functions as the core transactional engine. Workbooks operate as discrete
+schemas, while individual worksheets serve as indexed tables. Entities are structured with
+explicit field types across defined columns, using the first row as a schema declaration and
+subsequent rows as record entries.
+Because multiple web apps, intake forms, and automated routines can write to the same
+spreadsheet simultaneously, the architecture must prevent race conditions, dirty reads, and
+record overwriting. To maintain atomicity, all mutation operations must run inside the Apps Script
+LockService. Without locking, concurrent execution threads can interleave spreadsheet row
+evaluations, leading to data loss and corrupted row structures.
+The LockService API exposes three mutual exclusion scopes:
+   ●​ Script Locks: LockService.getScriptLock() establishes a global critical section across all
+       users and executions invoking that specific Apps Script deployment. This is required for
+       serializing operations across shared database tables.
+   ●​ Document Locks: LockService.getDocumentLock() isolates execution to a single
+       container file, such as a bound spreadsheet. This is used when modular scripts share
+       access to an underlying sheet document.
+   ●​ User Locks: LockService.getUserLock() restricts isolation to the active user account. This
+       is used to prevent duplicate user submissions while allowing background pipelines to
+       proceed concurrently.
+Because Google Sheets does not provide native transaction logs or isolation configurations, the
+architecture implements Software Transactional Logging. Before applying batch
+operations—such as debiting an inventory balance while logging an aid allocation—the script
+serializes the target rows into a temporary snapshot within CacheService. If an unhandled
+exception occurs before SpreadsheetApp.flush() runs, the catch block restores the previous row
+state, maintaining atomicity and consistency.
+/**​
+ * Executes an atomic transaction against the operational sheet.​
+ * @param {string} sheetName Name of the table worksheet.​
+ * @param {Function} mutationCallback Atomic write operation callback.​
+ * @returns {any} Result of the mutation callback.​
+ */​
+function executeAtomicTransaction(sheetName, mutationCallback) {​
+   const lock = LockService.getScriptLock();​
+   // Wait up to 30000ms (30s) to acquire the critical section mutex​
+   const hasLock = lock.tryLock(30000);​
+   ​
+   if (!hasLock) {​
+      throw new Error("System concurrency error: Database transaction
+timed out waiting for lock.");​
+   }​
+​
+    try {​
+       const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();​
+       const sheet = spreadsheet.getSheetByName(sheetName);​
+       const result = mutationCallback(sheet);​
+       // Flush all pending row calculations and operations to disk​
+       SpreadsheetApp.flush();​
+       return result;​
+    } finally {​
+       lock.releaseLock();​
+    }​
+}​
+​
+/**​
+  * Appends an entity record with guaranteed sequential ID allocation.​
+  */​
+function appendRecord(sheetName, recordObject) {​
+   return executeAtomicTransaction(sheetName, function(sheet) {​
+      const lastRow = sheet.getLastRow();​
+      const id = Utilities.getUuid();​
+      const timestamp = new Date().toISOString();​
+      ​
+      // Construct database row matching schema definition​
+      const rowPayload = [​
+        id,​
+        timestamp,​
+        recordObject.donorId,​
+        recordObject.amount,​
+        recordObject.currency,​
+        recordObject.programAllocation​
+      ];​
+      ​
+      sheet.appendRow(rowPayload);​
+      return { status: "COMMITTED", id: id, row: lastRow + 1 };​
+   });​
+}​
+
+Google Sheets enforces a hard limit of 10 million cells per workbook. Sequential row scans
+using Range.getValues() can introduce high latency due to serialization overhead between the
+V8 execution environment and the spreadsheet engine. To keep query response times under
+one second, the system uses three indexing approaches:
+  ●​ In-Memory Array Processing: The system avoids individual cell reads. It loads entire
+      datasets into memory in a single call using sheet.getDataRange().getValues(), filters
+      arrays natively within V8, and commits updates in batches with Range.setValues().
+  ●​ Fast Primary Key Scanning: To retrieve a record by its identifier without reading entire
+      sheets into memory, the system uses the spreadsheet engine's underlying search
+      indexing via createTextFinder():​
+      function findRowById(sheet, id) {​
+         const match =
+      sheet.getRange("A:A").createTextFinder(id).matchEntireCell(true).f
+      indNext();​
+         return match ? match.getRow() : null;​
+      }​
+
+  ●​ Volatile Caching: Reference data that changes infrequently—such as chart-of-account
+      identifiers, program codes, and volunteer skill registries—is serialized into CacheService
+      with a 6-hour time-to-live (TTL). Read queries check the cache first, avoiding round trips
+      to the spreadsheet engine.
+For high-volume, read-heavy workloads (such as spatial coordinates for field routing or archival
+case management), Sheets can be augmented or bypassed:
+  ●​ Newline-Delimited JSON (NDJSON) on Drive: Archival records and grant documents
+      are written as NDJSON files directly to dedicated Google Drive folders. The file IDs are
+      stored in an index sheet. Apps Script parses these blobs using stream buffers, avoiding
+      Sheets cell limits.
+  ●​ Client-Side WASM SQLite (sql.js): The web client downloads an encrypted binary .sqlite
+      database file stored in Google Drive. Using WebAssembly, the client instantiates SQLite
+      entirely in browser memory. Queries run instantly on the client side with full ANSI SQL
+      support. When updates occur, the updated SQLite binary is transmitted to the Apps Script
+      backend, locked, and overwritten in Drive, providing an offline-first data model for remote
+      field workers.
+Storage              Read Latency         Max Capacity       Concurrency Limit Optimal NGO Use
+Mechanism                                                                        Case
+Google Sheets        \approx 200 -        10,000,000 cells Strict serialization Primary CRM,
+Table                800\text{ ms}                           via LockService (1 donation logs,
+                                                             thread at a time) project ledgers,
+                                                                                 auditable
+                                                                                 transactions.
+Drive NDJSON         \approx 400 -        Drive storage      Parallel reads,     Grant
+Blobs                1200\text{ ms}       ceiling (15 GB–5 single writer via     attachments,
+                                          TB+)               versioning          system audit
+                                                                                 archives, historical
+                                                                                 reporting logs.
+CacheService         \approx 5 - 30\text{ 100 KB per key, Highly concurrent Session validation,
+                     ms}                  500 KB total store                     active token
+                                                                                 tracking, fast
+                                                                                 reference indices.
+WASM SQLite          < 2\text{ ms}        Memory-bound       Single-client       Field dispatch
+(Client)                                  (\approx 50 -      execution;          mapping, offline
+                                          250\text{ MB})     distributed sync    survey execution,
+                                                             required            mobile clinics.
+Serverless Backend Infrastructure: Apps Script
+Execution Engine
+Google Apps Script runs on Google's V8 runtime, supporting modern ECMAScript standards
+such as arrow functions, const/let, asynchronous functions, and destructuring. Unlike
+long-running server environments or containerized microservices, Apps Script operates under
+serverless execution constraints:
+   ●​ Execution Timeouts: Script invocations face a strict 6-minute execution limit on Google
+       Workspace Business and Enterprise accounts.
+   ●​ Concurrency Ceilings: A single user account can run a maximum of 30 simultaneous
+       script executions.
+   ●​ Daily Compute Quotas: Scripts are constrained to 6 hours of aggregate execution time
+       per day on Workspace accounts.
+To run long-running batch operations—such as generating thousands of PDF tax receipts or
+processing bulk geocoding jobs—without hitting the 6-minute timeout, the system uses
+self-replicating triggers.
+The script tracks its own execution time using new Date().getTime(). When execution reaches
+4.5 minutes, the script saves its state, sets an installable time-driven trigger to resume
+processing one minute later, and exits cleanly:
+function runLongRunningBatchMigration() {​
+   const START_TIME = new Date().getTime();​
+   const MAX_RUNTIME_MS = 270000; // 4.5 minutes execution threshold​
+   const properties = PropertiesService.getScriptProperties();​
+   let cursor = parseInt(properties.getProperty("MIGRATION_CURSOR") ||
+"0", 10);​
+   ​
+   const dataset = getDatasetRows(); // Retrieves large array​
+   ​
+   while (cursor < dataset.length) {​
+      if (new Date().getTime() - START_TIME > MAX_RUNTIME_MS) {​
+         properties.setProperty("MIGRATION_CURSOR", cursor.toString());​
+         ScriptApp.newTrigger("runLongRunningBatchMigration")​
+                       .timeBased()​
+                       .after(60000)​
+                       .create();​
+         return;​
+      }​
+      ​
+      // Process unit of work​
+      processRecord(dataset[cursor]);​
+      cursor++;​
+   }​
+   ​
+   // Cleanup once batch completes​
+   properties.deleteProperty("MIGRATION_CURSOR");​
+   deleteTriggersByName("runLongRunningBatchMigration");​
+}​
+
+Google Apps Script projects deployed as Web Apps expose two HTTP entry points: doGet(e)
+and doPost(e). Production deployments require two configuration choices:
+  ●​ Execute as: Setting this to Me (your account) executes all operations using the
+     developer's permissions, allowing the script to read and update underlying data stores
+       without exposing raw access directly to users.
+   ●​ Who has access: Configured as Anyone within domain for internal operational portals, or
+       Anyone for public donor portals and webhook endpoints.
+Consuming an Apps Script Web App from an external single-page application or client-side
+interface introduces an architectural challenge: the HTTP 302 redirection flow. When a client
+sends a request to https://script.google.com/macros/s/{id}/exec, Google does not return the
+payload directly. Instead, it issues an HTTP 302 Moved Temporarily response pointing to a
+dynamic endpoint at https://script.googleusercontent.com/macros/echo?..., where the response
+is served via ContentService.
+This redirection chain affects HTTP methods differently:
+For GET requests, modern browsers follow the 302 redirect automatically when configured with
+{ redirect: 'follow' }. The final response from script.googleusercontent.com returns with a
+wildcard Access-Control-Allow-Origin: * header, allowing the browser to parse the JSON
+response cleanly.
+For POST requests, however, a preflight barrier emerges. When a client issues a POST request
+with Content-Type: application/json, the browser sends an OPTIONS preflight request to verify
+cross-origin permissions. The Apps Script gateway does not support OPTIONS requests,
+causing the server to reject the call and the browser to block execution due to missing CORS
+headers.
+To bypass this issue, client applications must use simple requests. By formatting the POST body
+as stringified JSON and setting Content-Type: text/plain, the browser skips the OPTIONS
+preflight check. The Apps Script gateway accepts the request, triggers the 302 redirect, and
+passes the payload to doPost(e). The server reads the raw string using
+JSON.parse(e.postData.contents) and returns an OpenAI- or REST-compliant response via
+ContentService.
+// Server-Side Implementation (Code.gs)​
+function doPost(e) {​
+   try {​
+      // Parse plain text payload containing stringified JSON​
+      const requestData = JSON.parse(e.postData.contents);​
+      const action = requestData.action;​
+      let responseData = {};​
+​
+      if (action === "REGISTER_DONATION") {​
+         responseData = handleDonation(requestData.payload);​
+      } else {​
+         responseData = { status: "ERROR", message: "Invalid action
+routing" };​
+      }​
+​
+      return ContentService​
+         .createTextOutput(JSON.stringify(responseData))​
+         .setMimeType(ContentService.MimeType.JSON);​
+   } catch (err) {​
+      return ContentService​
+         .createTextOutput(JSON.stringify({ status: "FATAL", error:
+err.message }))​
+         .setMimeType(ContentService.MimeType.JSON);​
+     }​
+}​
+
+// Client-Side Browser Implementation​
+async function dispatchToBackend(payload) {​
+   const WEB_APP_URL = "https://script.google.com/macros/s/.../exec";​
+   ​
+   const response = await fetch(WEB_APP_URL, {​
+     method: "POST",​
+     redirect: "follow", // Mandate redirect handling across Google
+subdomains​
+     headers: {​
+        "Content-Type": "text/plain;charset=utf-8" // Suppress OPTIONS
+preflight​
+     },​
+     body: JSON.stringify(payload)​
+   });​
+   ​
+   if (!response.ok) throw new Error("Network transport error
+occurred.");​
+   return await response.json();​
+}​
+
+
+
+Assembly and Client Runtime: Browser Presentation
+Tier
+Google Sites acts as the administrative portal and front-end interface for the organization. It
+integrates natively with Google Workspace Single Sign-On (SSO), automates SSL certificate
+management, and maps page permissions directly to Google Groups. Because Google Sites
+does not allow arbitrary server-side code execution or custom dynamic page routes, dynamic
+interfaces are deployed using embedded Apps Script Web Apps (HtmlService) or custom
+embedded HTML/JavaScript modules.
+To protect users from cross-site scripting, HtmlService isolates custom frontends inside an
+iframe sandbox. The legacy Caja and NATIVE sandboxes have been deprecated in favor of
+standard HTML5 IFRAME mode. Embedded applications run inside an iframe hosted at a
+unique subdomain under script.googleusercontent.com, which enforces several browser
+security constraints:
+The sandboxed frame cannot access the document object model, cookies, or local storage of
+the parent page (e.g., Google Sites). External navigation must specify target="_blank" or use
+window.open(), as direct top-level navigation
+(window.top.l[span_9](start_span)[span_9](end_span)ocation) is restricted.
+Additionally, embedding a Web App within Google Sites requires disabling clickjacking
+protections by setting the frame mode to
+HtmlOutput.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL):
+function doGet(e) {​
+    const template = HtmlService.createTemplateFromFile("AppIndex");​
+   const output = template.evaluate();​
+   ​
+   output​
+     .setTitle("NGO Operations Portal")​
+     .addMetaTag("viewport", "width=device-width, initial-scale=1")​
+     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); //
+Permits Google Sites embedding​
+     ​
+   return output;​
+}​
+
+Because Apps Script does not provide native multi-file asset loading (e.g., standard <link
+href="style.css"> or <script src="bundle.js"> tags referencing local project files), all static assets,
+CSS, and frontend JavaScript must be packaged into a single payload.
+The architecture uses a scriptlet inclusion pattern (HtmlService.createHtmlOutputFromFile) to
+modularize development while inlining all code at runtime:
+<!-- AppIndex.html -->​
+<!DOCTYPE html>​
+<html>​
+   <head>​
+     <base target="_top">​
+     <!-- Load modern component styling via CDN -->​
+     <script src="https://cdn.tailwindcss.com"></script>​
+     <?!= include('StyleSheet'); ?>​
+   </head>​
+   <body class="bg-gray-50 text-slate-800">​
+     <div id="app" class="p-6 max-w-7xl mx-auto">​
+        <header class="mb-8 border-b pb-4">​
+           <h1 class="text-3xl font-bold text-emerald-800">AidFlow:
+Mission Operations</h1>​
+        </header>​
+        <main id="view-container">​
+           <!-- Dynamic component mounts here -->​
+        </main>​
+     </div>​
+     <?!= include('ClientScript'); ?>​
+   </body>​
+</html>​
+
+// Helper included in Code.gs to inline modular components​
+function include(filename) {​
+   return HtmlService.createHtmlOutputFromFile(filename).getContent();​
+}​
+
+For complex user interfaces, developers can build components locally using frameworks like
+React or Vue, and bundle them into a single HTML file using vite-plugin-singlefile. This compiled
+output is pushed directly to the Apps Script project via the Clasp CLI. Communication between
+the UI and the backend can then use either the text/plain Web App POST endpoint or the native
+google.script.run asynchronous remote procedure call (RPC) bridge.
+
+Infrastructure as Code (IaC), Metadata as Code, and
+CI/CD
+To make deployments reliable and reproducible across regional offices or partner teams, all
+configurations, folder structures, permissions, and application logic are managed as code.
+The Google Command Line Apps Script Projects (clasp) CLI allows developers to manage
+project files locally, compile TypeScript, run code analysis, and deploy scripts without using the
+online Apps Script editor.
+When deploying through continuous integration pipelines (such as GitHub Actions), clasp
+requires an active OAuth 2.0 token. A developer runs an initial clasp login locally, generating an
+authentication file at ~/.clasprc.json.
+The refresh token from that file is stored as an encrypted secret in the CI/CD environment.
+When code is pushed to the repository, the pipeline recreates the credentials and deploys
+updates headless:
+# .github/workflows/deploy.yml​
+name: Continuous Integration & Deployment Engine​
+​
+on:​
+   push:​
+      branches: [ main ]​
+​
+jobs:​
+   deploy:​
+      runs-on: ubuntu-latest​
+      steps:​
+         - name: Checkout Codebase​
+            uses: actions/checkout@v3​
+​
+         - name: Setup Node.js Runtime​
+            uses: actions/setup-node@v3​
+            with:​
+                node-version: 18​
+​
+         - name: Install Clasp Tooling​
+            run: npm install -g @google/clasp​
+​
+         - name: Provision Headless Clasp Credentials​
+            run: |​
+                cat <<EOF > ~/.clasprc.json​
+                {​
+                   "token": {​
+                      "access_token": "${{ secrets.CLASPRC_ACCESS_TOKEN }}",​
+                      "refresh_token": "${{ secrets.CLASPRC_REFRESH_TOKEN }}",​
+                      "scope":
+"https://www.googleapis.com/auth/script.projects
+https://www.googleapis.com/auth/drive.scripts",​
+                "token_type": "Bearer",​
+                "expiry_date": 1799999999000​
+             },​
+             "oauth2ClientSettings": {​
+                "clientId": "${{ secrets.GWS_CLIENT_ID }}",​
+                "clientSecret": "${{ secrets.GWS_CLIENT_SECRET }}",​
+                "redirectUri": "http://localhost"​
+             }​
+          }​
+          EOF​
+​
+      - name: Push Code and Deploy Version​
+        run: |​
+          clasp push -f​
+          clasp deploy --description "Automated Release - Commit: ${{
+github.sha }}"​
+
+The system manifest (appsscript.json) defines runtime parameters, explicit OAuth permission
+scopes, web application routing, and Advanced Service bindings:
+{​
+   "timeZone": "Etc/UTC",​
+   "dependencies": {​
+     "enabledAdvancedServices": [​
+        {​
+           "userSymbol": "Calendar",​
+           "serviceId": "calendar",​
+           "version": "v3"​
+        },​
+        {​
+           "userSymbol": "Tasks",​
+           "serviceId": "tasks",​
+           "version": "v1"​
+        },​
+        {​
+           "userSymbol": "Drive",​
+           "serviceId": "drive",​
+           "version": "v3"​
+        }​
+     ]​
+   },​
+   "exceptionLogging": "STACKDRIVER",​
+   "runtimeVersion": "V8",​
+   "oauthScopes": [​
+     "https://www.googleapis.com/auth/spreadsheets",​
+     "https://www.googleapis.com/auth/drive",​
+     "https://www.googleapis.com/auth/calendar",​
+     "https://www.googleapis.com/auth/tasks",​
+        "https://www.googleapis.com/auth/gmail.send",​
+        "https://www.googleapis.com/auth/script.external_request"​
+     ],​
+     "webapp": {​
+        "executeAs": "USER_DEPLOYING",​
+        "access": "MY_DOMAIN"​
+     }​
+}​
+
+To automate infrastructure provisioning, an initialization script builds the Google Drive folder
+hierarchy, generates spreadsheet schemas, applies column naming conventions, and sets
+access permissions.
+The system uses the Drive API's appProperties and properties key-value stores to attach
+metadata directly to files and folders. This eliminates hardcoded file IDs, allowing system
+components to discover resources dynamically by querying metadata attributes:
+/**​
+  * Provisions operational directory topology using metadata injection.​
+  */​
+function provisionEnvironmentTopology() {​
+   const rootName = "SYSTEM_NGO_OPERATIONS_ROOT";​
+   const existing = DriveApp.getFoldersByName(rootName);​
+   ​
+   let rootFolder;​
+   if (existing.hasNext()) {​
+      rootFolder = existing.next();​
+   } else {​
+      rootFolder = DriveApp.createFolder(rootName);​
+   }​
+   ​
+   // Tag directory with architectural metadata using Advanced Drive
+Service​
+   Drive.Files.update(​
+      {​
+         appProperties: {​
+            environment: "production",​
+            systemRole: "root-infrastructure-anchor",​
+            schemaVersion: "2.4.0"​
+         }​
+      },​
+      rootFolder.getId()​
+   );​
+   ​
+   console.log("Successfully provisioned root topology anchor: " +
+rootFolder.getId());​
+}​
+​
+/**​
+  * Discovers resources dynamically using appProperties search queries.​
+ */​
+function discoverDatabaseFile(roleIdentifier) {​
+   const query = `appProperties has { key='systemRole' and
+value='${roleIdentifier}' } and trashed = false`;​
+   const result = Drive.Files.list({ q: query, fields: "files(id,
+name)" });​
+   ​
+   if (result.files && result.files.length > 0) {​
+      return result.files[0].id;​
+   }​
+   throw new Error(`Topological resource discovery failure:
+${roleIdentifier}`);​
+}​
+
+
+
+Native Ecosystem Service Bus and Event-Driven
+Integrations
+Google Workspace includes a built-in event bus connecting Gmail, Google Calendar, Google
+Forms, Google Meet, Google Tasks, and Google Chat. The architecture utilizes these native
+integrations to power automated workflows across operations.
+Google Forms provides public data intake for aid requests, volunteer registrations, and grant
+applications. Form submissions automatically fire an onFormSubmit trigger that processes
+inputs in real time:
+function onBeneficiaryFormSubmit(e) {​
+   const response = e.namedValues;​
+   const applicantEmail = response["Email Address"][0];​
+   const locationAddress = response["Physical Address"][0];​
+   ​
+   // Step 1: Spatial geocoding via built-in Maps service​
+   const geoResult = Maps.newGeocoder().geocode(locationAddress);​
+   let coordinates = { lat: 0, lng: 0 };​
+   if (geoResult.status === "OK" && geoResult.results.length > 0) {​
+      coordinates =
+geoResult.results[[span_2](start_span)[span_2](end_span)[span_6](start
+_span)[span_6](end_span)0].geometry.location;​
+   }​
+   ​
+   // Step 2: Push into transactional datastore​
+   const recordId = appendRecord("FieldIntake", {​
+      email: applicantEmail,​
+      address: locationAddress,​
+      lat: coordinates.lat,​
+      lng: coordinates.lng​
+   });​
+   ​
+   // Step 3: Dispatch confirmation email​
+   GmailApp.sendEmail(​
+     applicantEmail,​
+     "Aid Distribution Intake Acknowledged",​
+     `Your request has been filed under ID ${recordId.id}. Our mobile
+teams will triage your position.`​
+   );​
+}​
+
+Scheduling interviews, volunteer orientations, and case reviews requires generating dynamic
+video meeting links. The standard CalendarApp service cannot create Google Meet links
+programmatically. Instead, the system uses the Advanced Calendar Service
+(Calendar.Events.insert) with conferenceDataVersion: 1, attaching a Hangouts Meet video
+solution directly to the event payload:
+/**​
+  * Schedules an interview and generates a Google Meet room.​
+  */​
+function createDispatchCalendarEvent(staffEmail, beneficiaryName,
+startTimeIso, endTimeIso) {​
+   const calendarId = "primary";​
+   const eventPayload = {​
+      summary: `Field Intake Interview: ${beneficiaryName}`,​
+      description: "Automated NGO Case Management Verification Video
+Conference.",​
+      start: { dateTime: startTimeIso },​
+      end: { dateTime: endTimeIso },​
+      attendees: [{ email: staffEmail }],​
+      conferenceData: {​
+         createRequest: {​
+            requestId: Utilities.getUuid(),​
+            conferenceSolutionKey: { type: "hangoutsMeet" }​
+         }​
+      }​
+   };​
+​
+   const createdEvent = Calendar.Events.insert(eventPayload,
+calendarId, {​
+      conferenceDataVersion: 1​
+   });​
+​
+   return {​
+      eventId: createdEvent.id,​
+      meetingUrl: createdEvent.hangoutLink​
+   };​
+}​
+
+Critical operational notifications—such as urgent supply shortages, intake spikes, or major
+donations—are posted to Google Chat spaces using incoming webhooks and cardsV2 JSON
+payloads:
+/**​
+ * Sends a CardsV2 structured notification to a Google Chat Space.​
+ */​
+function dispatchChatNotification(spaceWebhookUrl, alertTitle,
+severity, description) {​
+  const cardPayload = {​
+     cardsV2: [​
+       {​
+          cardId: Utilities.getUuid(),​
+          card: {​
+            header: {​
+              title: "Incident Operations Board",​
+              subtitle: `Priority Level: ${severity}`,​
+              imageUrl:
+"https://lh3.googleusercontent.com/d/YOUR_ICON_ID=s64",​
+              imageType: "CIRCLE"​
+            },​
+            sections: [​
+              {​
+                 header: "Event Metadata",​
+                 widgets: [​
+                    {​
+                       decoratedText: {​
+                          topLabel: "Alert Classification",​
+                          text: alertTitle​
+                       }​
+                    },​
+                    {​
+                       textParagraph: {​
+                          text: description​
+                       }​
+                    },​
+                    {​
+                       buttonList: {​
+                          buttons: [​
+                             {​
+                                text: "Acknowledge in Portal",​
+                                onClick: {​
+                                   openLink: {​
+                                      url:
+"https://sites.google.com/your-ngo-domain.org/portal"​
+                                   }​
+                                }​
+                             }​
+                          ]​
+                       }​
+                    }​
+                 ]​
+                           }​
+                      ]​
+                 }​
+            }​
+       ]​
+     };​
+​
+     UrlFetchApp.fetch(spaceWebhookUrl, {​
+       method: "post",​
+       contentType: "application/json; charset=UTF-8",​
+       payload: JSON.stringify(cardPayload)​
+     });​
+}​
+
+For task coordination, the Advanced Tasks Service (Tasks.Tasks.insert) assigns action items
+directly to a caseworker's Google Tasks list, making them accessible in their Gmail side-panel.
+Google Keep integration requires special architectural consideration. The Keep REST API is an
+enterprise administration service intended for Cloud Access Security Broker (CASB) compliance
+auditing rather than standard application data access. It requires domain-wide delegation via
+service accounts and is not exposed through internal Apps Script services.
+To support field notes without requiring a GCP project, the architecture uses automated Google
+Docs files or dedicated case journal tabs in Google Sheets. These documents are linked directly
+to beneficiary records, providing full edit histories and collaborative access out of the box.
+For supply chain logistics and route planning, the built-in Maps service provides geocoding and
+travel-time calculations without requiring external API keys:
+/**​
+  * Calculates optimal supply route duration using native Maps service.​
+  */​
+function computeRouteMetrics(originAddress, destinationAddress) {​
+   const directionFinder = Maps.newDirectionFinder()​
+      .setOrigin(originAddress)​
+      .setDestination(destinationAddress)​
+      .setMode(Maps.DirectionFinder.Mode.DRIVING);​
+​
+   const directions = directionFinder.getDirections();​
+   if (directions.status === "OK" && directions.routes.length > 0) {​
+      const route = directions.routes[0].legs[0];​
+      return {​
+          distanceMeters: route.distance.value,​
+          distanceText: route.distance.text,​
+          durationSeconds: route.duration.value,​
+          durationText: route.duration.text​
+      };​
+   }​
+   throw new Error("Unable to calculate route directions.");​
+}​
+Embedded AI and Cognitive Orchestration:
+OpenAI-Compatible Gemini Integration
+Google AI Studio exposes Gemini models through an OpenAI-compatible REST interface. This
+allows Apps Script backends to invoke large language models using standard chat/completions
+request formats via UrlFetchApp, eliminating external SDK dependencies:
+   ●​ Base URL: https://generativelanguage.googleapis.com/v1beta/openai/
+   ●​ Completions Endpoint:
+       https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
+   ●​ Authentication: Configured using an API key from Google AI Studio passed as a bearer
+       token (Authorization: Bearer GEMINI_API_KEY).
+The endpoint supports structured outputs via JSON Schema, allowing the system to convert
+unstructured text—such as intake requests or medical notes—into validated JSON data:
+/**​
+  * Evaluates an unstructured emergency incident report using Gemini.​
+  */​
+function triageIncidentReport(unstructuredNarrative) {​
+   const API_KEY =
+PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");​
+   const ENDPOINT =
+"https://generativelanguage.googleapis.com/v1beta/openai/chat/completi
+ons";​
+​
+   const payload = {​
+      model: "gemini-2.0-flash",​
+      messages: [​
+         {​
+            role: "system",​
+            content: "You are an emergency response triage coordinator for
+an international humanitarian NGO. Analyze inputs and return valid
+JSON."​
+         },​
+         {​
+            role: "user",​
+            content: unstructuredNarrative​
+         }​
+      ],​
+      response_format: {​
+         type: "json_schema",​
+         json_schema: {​
+            name: "IncidentAssessment",​
+            strict: true,​
+            schema: {​
+               type: "object",​
+               properties: {​
+                  priorityScore: { ​
+                   type: "integer", ​
+                   description: "Urgency score from 1 (lowest) to 5
+(critical emergency)" ​
+                },​
+                primaryCategory: { ​
+                   type: "string", ​
+                   enum: ["MEDICAL", "SHELTER", "WATER_SANITATION",
+"SECURITY", "LOGISTICS"] ​
+                },​
+                extractedNeeds: { ​
+                   type: "array", ​
+                   items: { type: "string" } ​
+                },​
+                summary: { ​
+                   type: "string" ​
+                }​
+              },​
+              required: ["priorityScore", "primaryCategory",
+"extractedNeeds", "summary"]​
+           }​
+        }​
+     }​
+   };​
+​
+   const response = UrlFetchApp.fetch(ENDPOINT, {​
+     method: "POST",​
+     contentType: "application/json",​
+     headers: {​
+        Authorization: `Bearer ${API_KEY}`​
+     },​
+     payload: JSON.stringify(payload),​
+     muteHttpExceptions: false​
+   });​
+​
+   const parsedResponse = JSON.parse(response.getContentText());​
+   const content = parsedResponse.choices[0].message.content;​
+   return JSON.parse(content);​
+}​
+
+The system also uses multimodal capabilities to process receipts, paper surveys, and invoices
+stored in Google Drive. Files are retrieved as binary blobs, base64-encoded, and submitted to
+gemini-2.0-flash to extract line items, merchant details, and totals directly into Google Sheets
+ledgers.
+For semantic search across grant policies, project guidelines, and case files, the system
+generates vector embeddings using gemini-embedding-001 or gemini-embedding-2-preview.
+The resulting vector arrays (768 or 1536 dimensions) are stored alongside document IDs in an
+indexing sheet. When a user runs a search, Apps Script converts the query into an embedding
+and calculates cosine similarity across the stored vectors directly in the V8 runtime:
+\text{Similarity}(A, B) = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2}
+\sqrt{\sum_{i=1}^{n} B_i^2}}
+Because similarity checks run directly within the fast V8 runtime, searching thousands of vector
+rows completes in milliseconds, providing semantic search capabilities without external vector
+databases.
+
+System Quotas, Failure Modes, and Security
+Boundaries
+Building an enterprise-scale NGO platform on Google Workspace without external GCP
+infrastructure requires operating within Google's daily service quotas and architectural limits.
+Operational Parameter Workspace Account           Failure Exception       Architectural Mitigation
+                         Quota                                            Strategy
+Execution Duration 6 minutes per script run Exceeded maximum              Use self-scheduling
+                                                  execution time          time-driven triggers to
+                                                                          divide batch operations
+                                                                          into sub-5-minute jobs.
+Simultaneous Scripts 30 concurrent runs per Too many scripts              Wrap write paths in
+                         user                     running simultaneously LockService and
+                                                                          aggregate client
+                                                                          requests into batches.
+Email Recipients         1,500 external / 2,000 Serv[span_75](start_sp Use
+                         internal daily           an)[span_75](end_span MailApp.getRemaining
+                                                  )ice invoked too many DailyQuota() to track
+                                                  times: Email            limits; queue overflow
+                                                                          messages in Sheets.
+UrlFetchApp Calls        100,000 calls per day S[span_83](start_span) Cache responses in
+                                                  [span_83](end_span)er CacheService; fetch
+                                                  vice invoked too many multiple requests at
+                                                  times: UrlFetch         once via fetchAll().
+Payload Ingestion        50 MB per UrlFetch       Response size exceeds Process files
+                         response / POST          limi[span_76](start_spa incrementally or
+                                                  n)[span_76](end_span) downscale image
+                                                  t                       assets using lh3 resize
+                                                                          parameters.
+Properties Service       50,000 writes/day; 500 Service invoked too       Read/write in bulk
+                         KB total store           many times for one      using properties objects
+                                                  day:                    instead of setting single
+                                                  properties[span_62](sta keys repeatedly.
+                                                  rt_span)[span_62](end
+                                                  _span)[span_65](start_
+                                                  span)[span_65](end_sp
+                                                  an)
+Triggers Bound           20 triggers per script   Limit exceeded:         Clean up finished
+                         per user                 Triggers                triggers automatically
+                                                                          using
+Operational Parameter Workspace Account          Failure Exception        Architectural Mitigation
+                      Quota                                               Strategy
+                                                                          ScriptApp.deleteTrigger
+                                                                          () after execution.
+Google Sheets Size 10,000,000 cells per           This sheet has          Move old records to
+                           spreadsheet            exceeded the            monthly archive sheets;
+                                                  maximum limit of cells store long unstructured
+                                                                          text in Drive flat files.
+Enterprise data security is enforced through a defense-in-depth model built on native
+Workspace access controls:
+All primary databases, backups, and confidential case files are stored inside restricted Shared
+Drives. Access is managed through Google Groups mapped to organizational roles (such as
+finance@ngo.org or supervisors[span_80](start_span)[span_80](end_span)@ngo.org). Field
+staff interact exclusively with user-facing web apps and forms, preventing direct access to the
+underlying spreadsheets.
+Apps Script Web Apps deployed with domain-level access identify the caller via
+Session.getActiveUser().getEmail(). The application verifies the user's role against an internal
+permissions table before executing business logic:
+function verifyRBACAccess(allowedRoles) {​
+   const email = Session.getActiveUser().getEmail();​
+   const userRole = getUserRoleFromSheet(email);​
+   ​
+   if (!allowedRoles.includes(userRole)) {​
+       throw new Error(`Security Violation: User ${email} does not have
+required permissions.`);​
+   }​
+}​
+
+To maintain regulatory compliance and prevent repudiation, all write operations append an
+immutable entry to an Audit_Log sheet. Each log entry records the user email, timestamp, entity
+identifier, previous values, and updated values.
+
+Architectural Synthesis
+This architecture demonstrates that a complete NGO operations system can be hosted entirely
+within the Google Workspace ecosystem without external GCP dependencies. By orchestrating
+Google Sheets as an indexed relational datastore, Drive's content delivery nodes for
+edge-cached static assets, Apps Script as an event-driven serverless compute runtime, and
+Google AI Studio for cognitive automation, organizations can deploy an enterprise-ready
+operations platform.
+Bypassing external cloud infrastructure reduces hosting costs to zero beyond standard
+Workspace licensing, simplifies disaster recovery, and ensures strong access control through
+native Google identities.
+Operating within platform quotas requires careful engineering—including LockService
+concurrency controls, text/plain CORS preflight bypasses, self-scheduling trigger loops, and
+cache optimization. With these patterns in place, the system delivers high availability,
+sub-second query performance, and auditable governance, allowing non-profit organizations to
+maximize their operational impact.
+
+Works cited
+
+1. Quotas for Google Services | Apps Script,
+https://developers.google.com/apps-script/guides/services/quotas 2. Automate your business
+with Google Apps Script | LCMH,
+https://lcmh.fr/en/articles/2025/automate-business-google-apps-script/ 3. Apps Script - Enum
+XFrameOptionsMode - Google for Developers,
+https://developers.google.com/apps-script/reference/html/x-frame-options-mode 4. OpenAI
+compatibility | Gemini API - Google AI for Developers,
+https://ai.google.dev/gemini-api/docs/openai 5. Advanced Drive Service | Apps Script - Google
+for Developers, https://developers.google.com/apps-script/advanced/drive 6. set http headers in
+google apps script - Stack Overflow,
+https://stackoverflow.com/questions/59686777/set-http-headers-in-google-apps-script 7.
+Confused about Workspace Quotas, Triggered Scripts timing out.,
+https://support.google.com/a/thread/255516766/confused-about-workspace-quotas-triggered-sc
+ripts-timing-out?hl=en 8. Images hosted on Google Drive are not displaying on a website,
+https://github.com/orgs/community/discussions/86986 9. [QuickTips 29] Google Drive URL tricks
+are super convenient ... - note, https://note.com/mir4545/n/n27918018ec84?hl=en 10. html -
+How do I display images from Google Drive on a website?,
+https://stackoverflow.com/questions/15557392/how-do-i-display-images-from-google-drive-on-a-
+website 11. How to Store Email Signature Images in Google Drive (2025 Guide),
+https://www.patronum.io/how-to-store-email-signature-images-in-google-drive 12. How display
+images from Google Drive on Gsheet cell?,
+https://stackoverflow.com/questions/60287504/how-display-images-from-google-drive-on-gsheet
+-cell 13. Displaying files (e.g. images) stored in Google Drive on a website,
+https://stackoverflow.com/questions/10311092/displaying-files-e-g-images-stored-in-google-driv
+e-on-a-website 14. Direct link to a hosted image in email signatures,
+https://www.mail-signatures.com/articles/direct-link-to-hosted-image/ 15. Google Cloud Video
+Streaming with Media CDN and Multi-DRM,
+https://www.vdocipher.com/blog/google-cloud-video-streaming/ 16. How do i allow a CORS
+requests in my google script? - Stack Overflow,
+https://stackoverflow.com/questions/53433938/how-do-i-allow-a-cors-requests-in-my-google-scri
+pt 17. bjgreenberg/senior-engineering-partner - GitHub,
+https://github.com/bjgreenberg/senior-engineering-partner 18. What are the specific quotas for
+Properties Service in Google Apps,
+https://stackoverflow.com/questions/27002846/what-are-the-specific-quotas-for-properties-servic
+e-in-google-apps-for-an-add-on 19. Quotas for Google Services - Coding Help Tips Resources
+Tutorials, https://basescripts.com/quotas-for-google-services 20. CORS issue with doPOST
+failure with no console logs - Reddit,
+https://www.reddit.com/r/GoogleAppsScript/comments/19dyebh/cors_issue_with_dopost_failure
+_with_no_console/ 21. [554057761] - Issue Tracker - googleusercontent.com,
+https://doc-2v1g-48u0-issuetracker.googleusercontent.com/issues/554057761 22. Is There Any
+Way to Send A POST Request To Google Apps Script,
+https://stackoverflow.com/questions/77603857/is-there-any-way-to-send-a-post-request-to-googl
+e-apps-script-on-a-html-page 23. New: Remote fetch in Scripting App - Airtable Community,
+https://community.airtable.com/announcements-6/new-remote-fetch-in-scripting-app-1417 24.
+Fix Lỗi Bad Request 400 Apps Script Google Sheets [2026],
+https://sheet.com.vn/blog/sua-loi-bad-request-error-400-apps-script-google-sheets 25. Google
+Apps Script - Authorization in a cross-origin iframe,
+https://joshuatz.com/posts/2019/google-apps-script-authorization-in-a-cross-origin-iframe/ 26.
+Google Apps Script in VS Code with clasp: Local Dev, Git, and CI,
+https://theappsscriptlab.com/google-apps-script-in-vs-code-with-clasp-local-dev-git-and-ci-cd-the
+-right-way/ 27. Use the command-line interface with clasp | Apps Script,
+https://developers.google.com/apps-script/guides/clasp 28. Browse Extensions - Gemini CLI,
+https://geminicli.com/extensions/ 29. How to use a service account for CI deployments #225 -
+GitHub, https://github.com/google/clasp/issues/225 30. fujiba/tegaru-press - GitHub,
+https://github.com/fujiba/tegaru-press 31. PHP - Google Drive API (v3) - GitHub Gist,
+https://gist.github.com/bshaffer/9bb2cdccd315880ab52f 32. Class CalendarApp | Apps Script -
+Google for Developers,
+https://developers.google.com/apps-script/reference/calendar/calendar-app 33. Bulk create
+Google Calendar events with optional Google Meet,
+https://www.pbainbridge.co.uk/2021/02/bulk-create-google-calendar-events-with_16.html 34.
+How to add a Google Meet link to a new Google Calendar Event,
+https://stackoverflow.com/questions/63930671/how-to-add-a-google-meet-link-to-a-new-google-
+calendar-event-using-a-google-apps 35. Create a Google Calendar Event via the Calendar
+API.gs - GitHub Gist, https://gist.github.com/phillypb/845477e8a52dc0c374d3f5c30dd05770 36.
+Send Form Submissions to Google Chat — Native Integration,
+https://boosterpackforms.com/docs/google-chat 37. Google Chat API: How do I switch between
+Cards v1 and Cards v2?,
+https://stackoverflow.com/questions/72965192/google-chat-api-how-do-i-switch-between-cards-
+v1-and-cards-v2 38. Tasks Service | Apps Script - Google for Developers,
+https://developers.google.com/apps-script/advanced/tasks 39. Appsheet tasks to appscript -
+issue with parameters not passed,
+https://discuss.google.dev/t/appsheet-tasks-to-appscript-issue-with-parameters-not-passed/164
+197 40. Google Keep API Overview, https://developers.google.com/workspace/keep/api/guides
+41. Google Keep API - Google for Developers,
+https://developers.google.com/workspace/keep/api/reference/rest 42. Google Keep - Google for
+Developers, https://developers.google.com/workspace/keep 43. Google script for Google Keep -
+Stack Overflow, https://stackoverflow.com/questions/58415135/google-script-for-google-keep
+44. Can I get the LatLong capture from the Adress... - AppSheet Q&A,
+https://discuss.google.dev/t/can-i-get-the-latlong-capture-from-the-adress/52676 45. Geocode in
+Google Sheets: The =GEOCODE() Formula (Free, No,
+https://get-instamaps.com/blog/google-sheets-geocode-formula 46. Error 404 when using
+Gemini API with OpenAI-compatible command, https://github.com/aandrew-me/tgpt/issues/341
+47. 如何讓Google Gemini API 相容OpenAI格式 - Jakevin's Blog,
+https://www.jakevin.uk/google/google-ai-api-openai-compatibility/ 48. Gemini API OpenAI
+Compatibility Base URL and Flatkey Router Setup,
+https://flatkey.ai/blog/gemini-api-openai-compatible-router 49. Gemini OpenAI-Compatible API
+Not Working - Uses Responses API, https://github.com/twentyhq/twenty/issues/16213
+
