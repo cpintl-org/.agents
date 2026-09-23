@@ -1,0 +1,14 @@
+{
+  "provider": "google-drive",
+  "resourceType": "folder",
+  "displayName": "{resource-display-name}",
+  "displayPath": "{organization}/{domain}/{resource}",
+  "fileId": "{drive-folder-id}",
+  "driveId": "{shared-drive-id-or-null}",
+  "parentIds": ["{parent-folder-id}"],
+  "mimeType": "application/vnd.google-apps.folder",
+  "webUrl": "{provider-url}",
+  "retrievedAt": "{rfc3339-timestamp}",
+  "sensitivity": "public|internal|confidential|restricted",
+  "ownerRole": "{responsible-role}"
+}

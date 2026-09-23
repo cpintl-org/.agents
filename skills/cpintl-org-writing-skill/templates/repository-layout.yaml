@@ -1,0 +1,32 @@
+organization: cpintl-org
+repository: "{organization}-{domain}-{component}"
+visibility: private
+purpose: "{one-sentence-purpose}"
+required_root_files:
+  - README.md
+  - SECURITY.md
+  - CONTRIBUTING.md
+root_directories:
+  - path: .github
+    purpose: "automation and collaboration configuration"
+  - path: docs
+    purpose: "human-readable documentation"
+  - path: src
+    purpose: "source code when applicable"
+    optional: true
+  - path: tests
+    purpose: "automated tests when applicable"
+    optional: true
+  - path: scripts
+    purpose: "deterministic utilities"
+    optional: true
+  - path: config
+    purpose: "non-secret configuration"
+    optional: true
+forbidden_content:
+  - credentials
+  - private-keys
+  - access-tokens
+  - personal-data
+  - confidential-exports
+  - production-database-dumps

@@ -1,0 +1,30 @@
+mappingId: "{organization}-{mapping}"
+status: draft
+server:
+  registryName: "io.github.{organization}/{server-slug}"
+  transportUrl: "{mcp-server-url}"
+  mode: read-only
+repository:
+  owner: "{github-owner}"
+  name: "{repository}"
+  ref: main
+  path: "{repository-path}"
+drive:
+  folderId: "{drive-folder-id}"
+  displayPath: "{organization}/{domain}/{resource}"
+  driveId: "{shared-drive-id-or-null}"
+uri:
+  scheme: bridge
+  pattern: "bridge://github-workspace/repos/{owner}/{repo}/tree/{ref}/{path}?drive_folder_id={encoded-id}&drive_path={encoded-path}"
+inputs:
+  repositoryOwner: "{github-owner}"
+  repository: "{repository}"
+  ref: main
+  repositoryPath: "{repository-path}"
+  driveFolderId: "{drive-folder-id}"
+  drivePath: "{display-path}"
+security:
+  preserveOpaqueIds: true
+  encodeComponents: true
+  allowWrite: false
+  redactSecrets: true

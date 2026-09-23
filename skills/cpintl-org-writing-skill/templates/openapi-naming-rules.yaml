@@ -1,0 +1,22 @@
+version: "1.0"
+style:
+  paths: plural-lowercase-kebab-case
+  pathParameters: kebab-case
+  operationIds: verbNoun-lowerCamelCase
+  schemaNames: UpperCamelCase
+  propertyNames: lowerCamelCase
+  enumValues: UPPER_SNAKE_CASE
+  headers: kebab-case
+  tags: plural-nouns
+rules:
+  requireOperationId: true
+  requireResponseSchemas: true
+  requireErrorSchema: true
+  forbidSecretsInExamples: true
+  encodePathParametersByClient: true
+  useOpaqueIdsForStableReferences: true
+examples:
+  path: /v1/{resources}/{resource-id}
+  operationId: getResource
+  schema: Resource
+  property: resourceId
