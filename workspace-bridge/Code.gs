@@ -72,8 +72,10 @@ function syncFiles_(paths, props) {
   let processed = 0;
   paths.forEach(path => {
     const content = githubContent_(path, props);
-    const name = path.split('/').pop().replace(/\.[^.]+$/, '');
-    const doc = findOrCreateDoc_(root, path, name);
+    const parts = path.split('/');
+    const name = parts.pop();
+    const destination = ensureFolderPath_(root, parts);
+    const doc = findOrCreateDoc_(destination, path, name, props);
     const body = DocumentApp.openById(doc.getId()).getBody();
     body.clear();
     body.appendParagraph(content);
@@ -90,12 +92,35 @@ function githubContent_(path, props) {
   return Utilities.newBlob(Utilities.base64Decode(data.content.replace(/\n/g, ''))).getDataAsString();
 }
 
-function findOrCreateDoc_(root, path, title) {
+function ensureFolderPath_(root, segments) {
+  let current = root;
+  segments.forEach(segment => {
+    if (!segment || segment === '.' || segment === '..' || /[\\\u0000-\u001f]/.test(segment)) throw new Error('unsafe_folder_segment');
+    const folders = current.getFoldersByName(segment);
+    current = folders.hasNext() ? folders.next() : current.createFolder(segment);
+  });
+  return current;
+}
+
+function pathMarker_(owner, repository, ref, path) {
+  return 'cpintl-bridge-path:' + [owner, repository, ref, path].join('/');
+}
+
+function findOrCreateDoc_(root, path, title, props) {
+  const marker = pathMarker_(props.GITHUB_OWNER, props.GITHUB_REPOSITORY, props.GITHUB_REF || 'main', path);
   const files = root.getFilesByName(title);
-  if (files.hasNext()) return files.next();
+  let unidentified = 0;
+  while (files.hasNext()) {
+    const candidate = files.next();
+    if (candidate.getDescription() === marker) return candidate;
+    if (!candidate.getDescription()) unidentified += 1;
+  }
+  if (unidentified > 0) throw new Error('duplicate_unidentified_filename');
   const created = DocumentApp.create(title);
-  DriveApp.getFileById(created.getId()).moveTo(root);
-  return DriveApp.getFileById(created.getId());
+  const file = DriveApp.getFileById(created.getId());
+  file.moveTo(root);
+  file.setDescription(marker);
+  return file;
 }
 
 function healthCheck() {

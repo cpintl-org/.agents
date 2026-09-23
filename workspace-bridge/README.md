@@ -22,3 +22,19 @@ This Apps Script project is an optional, user-deployed bridge. It does not creat
 5. Change `DRY_RUN` only after human approval and a recovery test.
 
 This bridge is not a guaranteed real-time service. If properties, token, mapping, or permissions are unavailable, it returns an error or manual-review status without changing Drive.
+
+## Nested folders and duplicate filenames
+
+The bridge recreates each repository directory below `DRIVE_ROOT_FOLDER_ID`. For example, `skills/workspace-drive-search/SKILL.md` is placed under:
+
+```text
+{Drive root}/skills/workspace-drive-search/SKILL.md
+```
+
+The document title is only the final filename. The synchronization identity is the full tuple `{GITHUB_OWNER, GITHUB_REPOSITORY, GITHUB_REF, repositoryPath}`, stored as a non-sensitive description marker on the Google Doc. This prevents `README.md` in `brains/` from being confused with `README.md` in `skills/`, and makes repeated pushes update the existing document rather than create another copy.
+
+Folder creation is idempotent: an existing folder with the same name at the same parent is reused. Path segments are checked for traversal and control characters. Keep the repository path stable; moving a file creates a new destination identity, so review and archive the old Drive document rather than silently deleting it.
+
+If the destination already contains an unmarked document with the same final filename, the bridge stops with a duplicate-identity error instead of guessing. Resolve that case manually by moving the unrelated document, confirming the correct repository file, and then running another dry-run.
+
+The bridge currently treats synchronized files as text documents. Test binary files separately and keep `DRY_RUN=true` until the resulting hierarchy and collision behavior have been reviewed by the owner.
