@@ -1,0 +1,2 @@
+component,displayName,purpose,costLabel,currentLimit,integrationPath,dataSensitivity,failureBehavior,sourceUrl,accessDate,confidence,owner,reviewDue
+{component-id},{display-name},{purpose},{always-free/no-subscription|free-tier/quota-bounded|trial/promotional|billing-dependent|paid-plan requirement},{current-limit},{integration-path},{public|internal|confidential|restricted},{failure-and-recovery},{official-source-url},{YYYY-MM-DD},{high|medium|low},{role-or-team},{YYYY-MM-DD}
