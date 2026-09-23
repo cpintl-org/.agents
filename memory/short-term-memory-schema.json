@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "cpintl-org short-term memory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["memoryId", "taskId", "summary", "sensitivity", "createdAt", "expiresAt", "provenance"],
+  "properties": {
+    "memoryId": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "taskId": {"type": "string", "minLength": 1, "maxLength": 128},
+    "summary": {"type": "string", "minLength": 1, "maxLength": 4000},
+    "openQuestions": {"type": "array", "items": {"type": "string", "maxLength": 500}, "maxItems": 20},
+    "approvedFacts": {"type": "array", "items": {"type": "string", "maxLength": 1000}, "maxItems": 50},
+    "sensitivity": {"type": "string", "enum": ["public", "internal", "restricted"]},
+    "redactionApplied": {"type": "boolean"},
+    "createdAt": {"type": "string", "format": "date-time"},
+    "expiresAt": {"type": "string", "format": "date-time"},
+    "provenance": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["sourceType", "locator"], "properties": {"sourceType": {"type": "string"}, "locator": {"type": "string"}, "accessedAt": {"type": "string", "format": "date-time"}}}, "maxItems": 20},
+    "humanReview": {"type": "string", "enum": ["not_required", "required", "approved"]}
+  }
+}

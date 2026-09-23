@@ -1,27 +1,38 @@
-# config/mcp-bridge-mapping.yaml
-version: "1.0"
+version: "1.1"
 organization: "cpintl-org"
 repository: ".agents"
 defaultRef: "main"
-
+status: draft
+security:
+  defaultMode: read-only
+  allowWrite: false
+  requireHumanApprovalForWrite: true
+  preserveOpaqueIds: true
+  encodeComponents: true
+  redactSecrets: true
 bridges:
-  - id: "brains-bridge"
-    repositoryPath: "brains"
+  - id: brains-bridge
+    repositoryPath: brains
     driveFolderId: "{drive-brains-folder-id}"
     drivePath: "AgenticHub/Brains"
-    bridgeUri: "bridge://github-workspace/repos/cpintl-org/.agents/tree/main/brains?drive_folder_id={drive-brains-folder-id}&drive_path=AgenticHub%2FBrains"
-    mode: "read-write"
-
-  - id: "skills-bridge"
-    repositoryPath: "skills"
+    mode: read-only
+  - id: skills-bridge
+    repositoryPath: skills
     driveFolderId: "{drive-skills-folder-id}"
     drivePath: "AgenticHub/Skills"
-    bridgeUri: "bridge://github-workspace/repos/cpintl-org/.agents/tree/main/skills?drive_folder_id={drive-skills-folder-id}&drive_path=AgenticHub%2FSkills"
-    mode: "read-only"
-
-  - id: "guardrails-bridge"
-    repositoryPath: "guardrails"
+    mode: read-only
+  - id: guardrails-bridge
+    repositoryPath: guardrails
     driveFolderId: "{drive-guardrails-folder-id}"
     drivePath: "AgenticHub/Guardrails"
-    bridgeUri: "bridge://github-workspace/repos/cpintl-org/.agents/tree/main/guardrails?drive_folder_id={drive-guardrails-folder-id}&drive_path=AgenticHub%2FGuardrails"
-    mode: "read-only"
+    mode: read-only
+  - id: templates-bridge
+    repositoryPath: templates
+    driveFolderId: "{drive-templates-folder-id}"
+    drivePath: "AgenticHub/Templates"
+    mode: read-only
+  - id: memory-bridge
+    repositoryPath: memory
+    driveFolderId: "{drive-memory-folder-id}"
+    drivePath: "AgenticHub/Memory"
+    mode: read-only

@@ -1,0 +1,5 @@
+{
+  "scriptId": "{apps-script-project-id}",
+  "rootDir": "workspace-bridge",
+  "filePushOrder": ["appsscript.json", "Code.gs"]
+}

@@ -1,0 +1,27 @@
+version: "1.0"
+policyId: "cpintl-org-naming-001"
+organization: "cpintl-org"
+status: active
+profiles:
+  repository: "^[a-z0-9](?:[a-z0-9-]{0,98}[a-z0-9])?$"
+  directory: "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+  branch: "^(feat|fix|docs|chore|refactor|test|build|release)/[a-z0-9][a-z0-9-]{0,62}$"
+  environmentVariable: "^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$"
+  mcpTool: "^[a-z][a-z0-9_]{0,127}$"
+  portablePath: "^[a-z0-9][a-z0-9._-]{0,62}$"
+reservedNames: [CON, PRN, AUX, NUL, COM1, LPT1]
+rules:
+  lowercasePortableNames: true
+  rejectControlCharacters: true
+  rejectPathTraversal: true
+  rejectTrailingSpacesOrPeriods: true
+  rejectCaseOnlyCollisions: true
+  preserveOpaqueProviderIds: true
+  encodeUriComponentsIndependently: true
+  forbidSecretsInNamesAndExamples: true
+mainOnly:
+  defaultBranch: main
+  permanentBranches: [main]
+  temporaryBranchPolicy: "Delete after merge or close; do not treat as a release channel."
+review:
+  requiredFields: [ownerRole, provider, visibility, sensitivity, lifecycle, exceptionStatus]

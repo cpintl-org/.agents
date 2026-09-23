@@ -1,0 +1,43 @@
+version: "1.0"
+policyId: "cpintl-org-agents-security-001"
+status: active
+scope:
+  repository: "cpintl-org/.agents"
+  defaultRef: main
+  providers: [github, google-workspace, external-llm]
+dataClasses:
+  public: "Safe for public repository publication after review."
+  internal: "Organization information requiring authenticated access."
+  restricted: "Personal, health, safeguarding, financial, credential, or case information."
+defaults:
+  allowExternalWrite: false
+  allowExternalShare: false
+  allowAiForRestrictedData: false
+  dryRunIntegrations: true
+  requireHumanReviewForPublish: true
+  requireHumanReviewForDestructiveAction: true
+rules:
+  - id: no-secrets
+    action: deny
+    patternNames: [api_key, access_token, refresh_token, password, private_key, service_account]
+    locations: [git, prompts, logs, sheets, docs, issues, actions-artifacts]
+  - id: path-safety
+    action: deny
+    conditions: [path-traversal, control-character, reserved-name, case-only-collision]
+  - id: least-privilege
+    action: require
+    evidence: [requested-scope, actor-role, provider-permission, expiry-or-review-date]
+  - id: restricted-data
+    action: require_human_review
+    conditions: [external-ai, public-link, cross-organization-share, automated-publish]
+  - id: destructive-actions
+    action: require_human_review
+    actions: [delete, revoke, overwrite, migrate, change-owner, change-billing, change-security]
+  - id: provider-failure
+    action: fallback
+    behavior: preserve-input-and-create-manual-task
+logging:
+  allowedFields: [auditId, operation, status, provider, model, redactionApplied, actorRole, timestamp]
+  forbiddenFields: [prompt, rawResponse, beneficiaryId, healthData, token, credential]
+exceptions:
+  process: "Record reason, scope, owner, expiry, compensating control, and approver in a decision record."

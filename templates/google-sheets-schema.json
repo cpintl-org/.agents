@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "cpintl-org agent operational record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["recordId", "operation", "status", "sensitivity", "ownerRole", "observedAt"],
+  "properties": {
+    "recordId": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "operation": {"type": "string", "enum": ["research", "document", "search", "sync", "review", "migration"]},
+    "status": {"type": "string", "enum": ["draft", "queued", "manual_review", "approved", "completed", "denied", "error"]},
+    "sensitivity": {"type": "string", "enum": ["public", "internal", "restricted"]},
+    "ownerRole": {"type": "string", "minLength": 1, "maxLength": 128},
+    "repositoryPath": {"type": "string", "pattern": "^[A-Za-z0-9._/-]+$"},
+    "providerFileId": {"type": ["string", "null"]},
+    "redactionApplied": {"type": "boolean"},
+    "humanReviewerRole": {"type": ["string", "null"]},
+    "observedAt": {"type": "string", "format": "date-time"},
+    "sourceUrl": {"type": ["string", "null"], "format": "uri"},
+    "notes": {"type": "string", "maxLength": 2000}
+  }
+}

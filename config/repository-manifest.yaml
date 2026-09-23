@@ -1,0 +1,30 @@
+version: "1.0"
+repository:
+  owner: cpintl-org
+  name: .agents
+  defaultRef: main
+  operatingModel: main-only
+components:
+  brains: brains
+  skills: skills
+  guardrails: guardrails
+  templates: templates
+  memory: memory
+  workspaceBridge: workspace-bridge
+  configuration: config
+validation:
+  workflow: .github/workflows/skill-validation.yml
+  syncWorkflow: .github/workflows/workspace-sync.yml
+  requiredChecks: [Validate skill packages]
+  secretScanning: true
+  schemaValidation: true
+providerPolicy:
+  modelAgnostic: true
+  noProviderRequired: true
+  sensitiveDataDefault: deny
+  manualFallbackRequired: true
+placeholders:
+  - drive-folder-id
+  - apps-script-project-id
+  - github-token
+  - workspace-bridge-webhook-url

@@ -1,210 +1,99 @@
-# `.agents` — Universal AI Agent Command Center
+# `.agents` — cpintl-org Agent Resources Hub
 
-Welcome to the central brain of **`cpintl-org`**! 🎨✨
+`.agents` is a provider-neutral repository for reusable agent **brains**, **skills**, **guardrails**, **templates**, **memory schemas**, and an optional Google Workspace bridge. It is designed for non-coders who can edit Google Docs, Google Drive, Markdown, or GitHub files. The repository stores instructions and configuration templates; it is not a database for beneficiary records, a secret manager, or a promise of unlimited free hosting.
 
-This repository is designed specifically for **no-coders, vibe-coders, and creators**. You do not need to write complex code, learn terminal commands, or decipher complicated technical jargon to build and manage world-class AI agents here.
+## Start here
 
-If you can type in Google Docs, organize files in Google Drive, or edit simple Markdown files on GitHub, you can control the entire AI universe of `cpintl-org`!
+| If you want to… | Open |
+|---|---|
+| Understand the repository | This README and [`docs/no-coder-maintenance.md`](docs/no-coder-maintenance.md) |
+| Create an agent role | [`brains/README.md`](brains/README.md) |
+| Add a reusable capability | [`skills/README.md`](skills/README.md) |
+| Apply safety and privacy rules | [`guardrails/README.md`](guardrails/README.md) |
+| Produce a document or spreadsheet | [`templates/README.md`](templates/README.md) |
+| Understand context retention | [`memory/README.md`](memory/README.md) |
+| Configure GitHub-to-Workspace mapping | [`config/mcp-bridge-mapping.yaml`](config/mcp-bridge-mapping.yaml) |
+| Deploy the optional bridge | [`workspace-bridge/README.md`](workspace-bridge/README.md) |
+| Manage GitHub without coding | [`skills/github-repository-operations/SKILL.md`](skills/github-repository-operations/SKILL.md) |
 
----
+## How the pieces fit together
 
-## 📜 Table of Contents
+A **brain** defines an agent’s role and working method. A **skill** supplies a repeatable procedure. **Guardrails** define what is forbidden or requires review. **Templates** standardize outputs. **Memory** provides bounded, expiring context. The optional **workspace bridge** synchronizes approved repository paths with Google Drive after an owner deploys and configures it.
 
-1. [🌟 What is This Hub?](https://www.google.com/search?q=%2523-what-is-this-hub&utm_source=gemini)
-2. [🏗️ How Everything is Organized (The Lego Block System)](https://www.google.com/search?q=%2523%25EF%25B8%258F-how-everything-is-organized-the-lego-block-system&utm_source=gemini)
-3. [📂 Repository Tree](https://www.google.com/search?q=%2523-repository-tree&utm_source=gemini)
-4. [🔗 How GitHub & Google Workspace Connect in Real Time](https://www.google.com/search?q=%2523-how-github--google-workspace-connect-in-real-time&utm_source=gemini)
-5. [💡 Beginner's Guide: How, What, & Where to Add Content](https://www.google.com/search?q=%2523-beginners-guide-how-what--where-to-add-content&utm_source=gemini)
-* [Adding a New Agent Brain](https://www.google.com/search?q=%25231-adding-a-new-agent-brain&utm_source=gemini)
-* [Adding a Reusable Skill](https://www.google.com/search?q=%25232-adding-a-reusable-skill&utm_source=gemini)
-* [Adding a Guardrail or Rule](https://www.google.com/search?q=%25233-adding-a-guardrail-or-rule&utm_source=gemini)
-* [Adding a Template](https://www.google.com/search?q=%25234-adding-a-template&utm_source=gemini)
+The system is provider-agnostic. The same instructions may be used with Gemini, Claude, OpenAI-compatible services, local models, or no model at all. A provider is never assumed to be available, free, private, or suitable for restricted data. Every integration must have a manual fallback.
 
-
-6. [🛡️ Universal Provider Agnosticism & Security](https://www.google.com/search?q=%2523%25EF%25B8%258F-universal-provider-agnosticism--security&utm_source=gemini)
-7. [🤝 Maintenance & Contribution Rules](https://www.google.com/search?q=%2523-maintenance--contribution-rules&utm_source=gemini)
-
----
-
-## 🌟 What is This Hub?
-
-Think of **`.agents`** as a master **AI Control Panel**.
-
-Instead of locking your AI setups inside a single app (like only using ChatGPT or only using Gemini), this repository acts as a single, universal storage unit. You write your prompts, skills, and rules here, and they automatically sync with your **Google Workspace (Docs, Sheets, Shared Drives)**.
-
-From here, you can connect your agent setup to **any AI provider**—including Gemini, Google AI Studio, Claude, OpenAI, GitHub Copilot, DeepSeek, or local tools—without ever re-writing your instructions!
-
----
-
-## 🏗️ How Everything is Organized (The Lego Block System)
-
-We structure everything like **Lego Blocks**. Each component does one specific job, and you can snap them together to build any AI agent you want!
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                              AGENT BRAIN                               │
-│                   (Personality, Role & Instructions)                   │
-└──────────────────┬─────────────────────────────────┬───────────────────┘
-                   │                                 │
-                   ▼                                 ▼
-┌─────────────────────────────────────┐   ┌──────────────────────────────┐
-│               SKILLS                │   │          GUARDRAILS          │
-│   (Tools, Actions & Capabilities)   │   │  (Safety Rules & Boundaries) │
-└──────────────────┬──────────────────┘   └──────────────┬───────────────┘
-                   │                                     │
-                   └──────────────────┬──────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                               TEMPLATES                                │
-│                     (Google Docs / Sheets Outputs)                     │
-└────────────────────────────────────────────────────────────────────────┘
-
-```
-
-1. **`brains/`**: The *Identity* (Who the agent is and what its goals are).
-2. **`skills/`**: The *Capabilities* (What the agent knows how to do, step-by-step).
-3. **`guardrails/`**: The *Safety Controls* (What the agent is allowed or forbidden to do).
-4. **`templates/`**: The *Output Formats* (How documents, sheets, or emails should look).
-5. **`memory/`**: The *Context Store* (How agents remember past interactions).
-6. **`workspace-bridge/`**: The *Automation Engine* (The background magic that connects GitHub to Google Workspace).
-
----
-
-## 📂 Repository Tree
-
-Here is the exact layout of the `.agents` central repository:
+## Repository tree
 
 ```text
 .agents/
-├── README.md                          # You are here! Master guide for no-coders
-├── LICENSE                            # Open/Internal usage terms
-├── SECURITY.md                        # Security & vulnerability policies
-├── .github/
-│   └── workflows/
-│       └── workspace-sync.yml         # Auto-sync engine running in the background
+├── README.md
+├── LICENSE
+├── SECURITY.md
+├── .github/workflows/
+│   ├── skill-validation.yml
+│   └── workspace-sync.yml
 ├── config/
-│   ├── naming-policy.yaml             # Naming conventions for cpintl-org
-│   └── mcp-bridge-mapping.yaml        # Maps GitHub folders to Google Drive folder IDs
-├── brains/                            # AGENT PERSONALITIES & PROMPTS
-│   ├── README.md                      # Guide to creating agent brains
-│   ├── research-agent.md              # Research Assistant instructions
-│   └── doc-writer-agent.md            # Technical Writer instructions
-├── skills/                            # REUSABLE AGENT SKILLS
-│   ├── README.md                      # Guide to packaging skills
-│   ├── cpintl-org-writing-skill/      # Self-contained skill block
-│   │   ├── SKILL.md                   # Primary trigger & skill instructions
-│   │   ├── references/                # Deep reference docs (one level deep)
-│   │   ├── scripts/                   # Utility helpers
-│   │   └── templates/                 # Document outlines
-│   └── workspace-drive-search/
-│       └── SKILL.md
-├── guardrails/                        # RULES, PRIVACY & SAFETY POLICIES
-│   ├── README.md                      # Guide to setting agent boundaries
-│   ├── security-rules.yaml            # Secret prevention & privacy rules
-│   └── data-retention-policy.md       # Data handling rules
-├── templates/                         # OUTPUT STRUCTURES & ASSETS
-│   ├── README.md                      # Guide to creating templates
-│   ├── google-docs-outline.md         # Document formatting rules
-│   └── google-sheets-schema.json      # Structured spreadsheet definitions
-├── memory/                            # AGENT CONTEXT & STATE SCHEMAS
-│   ├── README.md                      # Guide to agent memory
-│   └── short-term-memory-schema.json  # Context retention structures
-└── workspace-bridge/                  # GOOGLE APPS SCRIPT ENGINE
-    ├── appsscript.json                # Apps Script manifest
-    ├── Code.gs                        # Listens for GitHub edits and syncs Drive
-    └── clasp.json                     # Google Workspace CLI configuration
-
+│   ├── naming-policy.yaml
+│   ├── mcp-bridge-mapping.yaml
+│   └── repository-manifest.yaml
+├── brains/
+│   ├── README.md
+│   ├── research-agent.md
+│   └── doc-writer-agent.md
+├── skills/
+│   ├── README.md
+│   ├── cpintl-org-writing-skill/       # Full skill with references, scripts, templates
+│   ├── google-workspace-free-serverless/ # Quota-safe Workspace patterns
+│   ├── github-repository-operations/  # No-coder GitHub management
+│   └── workspace-drive-search/         # Approved Drive search contract and validator
+├── guardrails/
+│   ├── README.md
+│   ├── security-rules.yaml
+│   └── data-retention-policy.md
+├── templates/
+│   ├── README.md
+│   ├── google-docs-outline.md
+│   └── google-sheets-schema.json
+├── memory/
+│   ├── README.md
+│   └── short-term-memory-schema.json
+└── workspace-bridge/
+    ├── README.md
+    ├── appsscript.json
+    ├── Code.gs
+    └── clasp.json
 ```
 
----
+## No-coder workflow
 
-## 🔗 How GitHub & Google Workspace Connect in Real Time
+Describe the desired outcome in plain language. A maintainer can prepare a temporary working branch, run checks, open a pull request, merge an approved change into `main`, and delete the temporary branch. The only permanent branch is `main`. Normal contributors should not push directly to it; an authorized administrator may bypass the rule only for controlled recovery or testing.
 
-You don't need to manually copy and paste text between GitHub and Google Docs!
+When adding a brain, define role, goal, inputs, boundaries, evidence, output, and escalation. When adding a skill, create a lowercase kebab-case folder with a concise `SKILL.md`; move detailed material into references and reusable structures into templates. When adding a guardrail, state the data class, prohibited action, approval requirement, and fallback. When adding a template, keep facts out of it and retain placeholders until verified.
 
-```text
-┌────────────────────────┐      Webhook Signal     ┌────────────────────────┐
-│   GitHub (.agents)     │ ──────────────────────> │   Google Apps Script   │
-│  Edit Markdown File    │                         │   (workspace-bridge)   │
-└────────────────────────┘                         └───────────┬────────────┘
-                                                               │
-                                                               ▼
-                                                   ┌────────────────────────┐
-                                                   │   Google Shared Drive  │
-                                                   │  Real-Time Updated Doc │
-                                                   └────────────────────────┘
+## Workspace bridge reality
 
+The bridge is optional and is not automatically active merely because `workspace-bridge/` exists. The owner must deploy Apps Script, set Script Properties, verify the Drive folder IDs, configure GitHub secrets, run a synthetic dry-run, and approve any write mode. The default bridge mapping is read-only and uses placeholders. Without an endpoint and secrets, the sync workflow intentionally skips external delivery.
+
+The bridge should be treated as event-assisted synchronization, not a guaranteed real-time or enterprise service. GitHub remains the canonical source for repository files. Drive is a mapped copy or working view. Do not store secrets, restricted case data, health information, or OAuth tokens in this repository.
+
+## Security and provider independence
+
+The repository rejects hardcoded secrets, unsafe paths, fabricated provider IDs, unrestricted external writes, and unreviewed destructive actions. See [`SECURITY.md`](SECURITY.md) and [`guardrails/security-rules.yaml`](guardrails/security-rules.yaml). AI is optional: redact data first, use approved providers only, require human review for consequential outputs, and preserve a no-AI path.
+
+## Validation
+
+The validation workflow runs on pull requests, pushes to `main`, manual runs, and a weekly schedule. It checks skill metadata and references, the free-resource evidence matrix, YAML/JSON structure, likely secret patterns, unsafe paths, and whitespace. The workspace workflow validates the bridge mapping and skips external dispatch when secrets are not configured.
+
+For local checks, use:
+
+```bash
+python /home/ubuntu/skills/skill-creator/scripts/quick_validate.py skills/{skill-name}
+python skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
+python skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
 ```
 
-1. **Every GitHub folder corresponds to a Google Drive folder**:
-* `brains/` ➡️ `[cpintl-org] Agentic Hub / Brains`
-* `skills/` ➡️ `[cpintl-org] Agentic Hub / Skills`
-* `guardrails/` ➡️ `[cpintl-org] Agentic Hub / Guardrails`
+## Assumptions and boundaries
 
+This repository intentionally uses placeholders for Google Drive folder IDs, Apps Script project IDs, tokens, domains, and Workspace roles. Current quotas, pricing, model availability, provider data-use terms, and API behavior must be verified at execution time. A green repository check proves structure and policy checks passed; it does not grant external authorization, prove a Drive mapping exists, or certify a production deployment.
 
-2. **Dual Identity**: Behind the scenes, every file keeps a clean link (a *Bridge URI*) connecting its GitHub location to its Google Drive File ID.
-3. **Automatic Updates**: When you save a file on GitHub, a background job immediately updates the corresponding document in Google Workspace.
-
----
-
-## 💡 Beginner's Guide: How, What, & Where to Add Content
-
-### 1. Adding a New Agent Brain
-
-* **Where to go**: The `brains/` folder.
-* **What to add**: Create a new file ending in `.md` (e.g., `brains/social-media-agent.md`).
-* **How to write it**: Use plain English! Define:
-* Who the agent is (e.g., "You are an expert copywriter").
-* What its goal is.
-* Which skills it should use from the `skills/` folder.
-
-
-
-### 2. Adding a Reusable Skill
-
-* **Where to go**: The `skills/` folder.
-* **What to add**: Create a folder named after your skill using lowercase letters and hyphens (e.g., `skills/format-excel-sheets/`).
-* **Inside that folder, create**:
-* `SKILL.md` (Required): Contains the trigger description and step-by-step instructions (under 500 lines).
-* `references/` (Optional): A folder for detailed guides if the instructions are long.
-* `templates/` (Optional): Pre-made example outputs.
-
-
-
-### 3. Adding a Guardrail or Rule
-
-* **Where to go**: The `guardrails/` folder.
-* **What to add**: Create a Markdown file or simple list detailing safety boundaries.
-* **Example**: "Never share personal email addresses; do not delete files; always ask for human approval before sending an email."
-
-### 4. Adding a Template
-
-* **Where to go**: The `templates/` folder.
-* **What to add**: Markdown layouts, HTML snippets, or CSV structures that agents should use when creating Google Docs or Sheets.
-
----
-
-## 🛡️ Universal Provider Agnosticism & Security
-
-* **Provider Agnostic**: These prompt files do not belong to OpenAI, Gemini, or Claude. You can load these exact files into Google AI Studio, Claude Projects, OpenAI Custom GPTs, or local tools without modifying them.
-* **Zero Secrets Allowed**: Never type passwords, API keys, or private tokens inside any document or file. Always use placeholders like `{GEMINI_API_KEY}` or `{DRIVE_FOLDER_ID}`.
-* **Safe Filesystem Names**: Always use lowercase words separated by hyphens for folder and file names (e.g., `my-first-agent.md`). Do not use spaces or special symbols like `#`, `$`, `@`, or `%`.
-
----
-
-## 🤝 Maintenance & Contribution Rules
-
-As a no-coder maintainer or contributor, follow these simple rules to keep the system fast and error-free:
-
-1. **Keep `SKILL.md` Concise**: Keep main skill files under 500 lines. Move extra details into a file inside the `references/` folder.
-2. **Never Rename Folders Directly in Google Drive**: If you want to rename a folder, do it here in GitHub so the background links don't break.
-3. **Use Simple English**: Write all prompts and guides clearly so anyone on your team can understand and update them!
-
-### Main-only repository workflow
-
-The permanent source of truth is the [`main` branch](https://github.com/cpintl-org/.agents/tree/main). Temporary working branches may be created automatically for a change, but they are removed after the change is merged. Automatic checks run for pull requests, updates to `main`, manual runs, and a weekly health check. No-coder maintenance instructions are in [`docs/no-coder-maintenance.md`](docs/no-coder-maintenance.md).
-
----
-
-*Managed by `cpintl-org` — Powering Next-Generation No-Code & AI Workflows.*
+Maintained by `cpintl-org` as a provider-neutral, no-coder agent resource hub.

@@ -65,18 +65,39 @@ jobs:
       - name: Run bundled free-matrix checker
         run: python skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
 
+      - name: Validate bridge fixture and structured files
+        run: |
+          python skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
+          python - <<'PY'
+          import json, pathlib, yaml
+          for path in pathlib.Path('.').rglob('*'):
+              if '.git' in path.parts or not path.is_file():
+                  continue
+              if path.suffix.lower() == '.json':
+                  json.loads(path.read_text(encoding='utf-8'))
+              elif path.suffix.lower() in {'.yaml', '.yml'}:
+                  yaml.safe_load(path.read_text(encoding='utf-8'))
+          print('all YAML and JSON files parsed successfully')
+          PY
+
       - name: Check for secrets and unsafe paths
         shell: bash
         run: |
           set -euo pipefail
-          if grep -RInE 'AKIA[0-9A-Z]{16}|BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}' skills; then
+          if grep -RInE 'AKIA[0-9A-Z]{16}|BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{20,}' --exclude-dir=.git .; then
             echo 'Potential credential pattern found in skills.'
             exit 1
           fi
-          if find skills -type f \( -name '*..*' -o -path '*/../*' \) | grep -q .; then
+          if find . -path './.git' -prune -o -type f \( -name '*..*' -o -path '*/../*' \) -print | grep -q .; then
             echo 'Unsafe traversal-like path found.'
             exit 1
           fi
+
+      - name: Check bridge defaults
+        run: |
+          grep -q 'DRY_RUN.*true' workspace-bridge/README.md
+          grep -q 'defaultMode: read-only' config/mcp-bridge-mapping.yaml
+          grep -q 'allowWrite: false' config/mcp-bridge-mapping.yaml
 
       - name: Check repository whitespace
         run: git diff --check

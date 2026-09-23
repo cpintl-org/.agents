@@ -1,58 +1,25 @@
-# Security & Safety Policy — `.agents` Hub
+# Security and safety policy
 
-The **`cpintl-org`** organization is dedicated to maintaining a secure, privacy-compliant, and leak-free environment across all AI agent brains, skills, templates, and Google Workspace integrations.
+This repository contains reusable instructions, schemas, templates, and optional integration code. It must not contain secrets, beneficiary records, health or safeguarding case data, private OAuth tokens, or unapproved public links.
 
----
+## Required controls
 
-## 🛡️ Non-Negotiable Security Rules for No-Coders
+| Area | Rule |
+|---|---|
+| Secrets | Never commit API keys, passwords, bearer tokens, refresh tokens, private keys, or service-account JSON. Use approved secret stores and placeholders. |
+| Data | Treat personal, health, safeguarding, financial, and case data as restricted. Do not place it in prompts, GitHub, public Drive links, Actions logs, or model calls without an approved policy. |
+| Identity | Use least privilege. Preserve provider-issued IDs; never derive access from display names. |
+| Paths | Reject traversal, control characters, reserved names, unsafe Unicode, case-only collisions, and embedded credentials. |
+| Integrations | Default to read-only and dry-run. Require human review for writes, sharing, publishing, deletion, migration, and security changes. |
+| AI | Redact first, use an approved provider, record only minimum audit metadata, and keep a manual fallback. |
+| Recovery | Export and test recovery before changing a system of record. Do not call a free tier an SLA or unlimited service. |
 
-To protect our organization, Google Drive resources, and external API services, all maintainers and vibe-coders MUST observe the following rules:
+## Reporting
 
-1. **NO Hardcoded Credentials or Secrets**:
-   * Never paste API keys, passwords, bearer tokens, service account credentials, or private credentials inside any Markdown document, prompt file, script, or sheet template.
-   * Use structured placeholders at all times (e.g., `{GEMINI_API_KEY}`, `{WORKSPACE_OAUTH_TOKEN}`, `{DRIVE_FOLDER_ID}`).
+Do not disclose a suspected secret or vulnerability in a public issue. Use the repository owner’s verified private security contact or GitHub’s private vulnerability reporting feature when enabled. If no verified contact is available, tell the responsible organization administrator without copying the sensitive value into email, chat, or an issue.
 
-2. **No Confidential Data Leaks**:
-   * Avoid putting personally identifiable information (PII), proprietary financial records, or private user IDs into agent prompts or skill descriptions.
+Include only a redacted description, affected path or commit, impact, reproduction steps that do not expose secrets, and a safe contact method. The maintainer should acknowledge receipt, revoke or rotate affected credentials, preserve evidence safely, patch the issue, and document closure.
 
-3. **Validate Filenames and Paths**:
-   * Restrict file and folder names to lowercase kebab-case (`a-z`, `0-9`, and hyphens `-`).
-   * Do not use reserved system characters, path traversal markers (`../`), or embedded tokens in naming structures.
+## Supported branch model
 
-4. **Read-Only Operations as Default**:
-   * Automated MCP bridges and workspace sync triggers operate with read-only access by default unless write access is explicitly authorized in `config/mcp-bridge-mapping.yaml`.
-
----
-
-## 🔒 Supported Versions
-
-Only the active default branch (`main`) of the `.agents` monorepo receives security updates, policy updates, and sync workflow fixes.
-
-| Component / Scope | Supported Version | Security Sync Active |
-| ----------------- | ----------------- | -------------------- |
-| `.agents/main`    | `1.0.x`           | Yes                  |
-| Feature Branches  | Experimental      | No                   |
-
----
-
-## 🚨 Reporting a Vulnerability
-
-If you discover a potential security vulnerability, exposed credential placeholder, or data leakage risk within `cpintl-org/.agents`, **do not open a public GitHub issue**.
-
-Please report vulnerabilities privately:
-
-1. **Email Notification**: Contact the maintainers directly at `security@cpintl-org.internal` (or notify your designated system administrator).
-2. **Details to Include**:
-   * Description of the vulnerability or exposed file path.
-   * Steps to reproduce or locate the issue.
-   * Impact on Google Workspace, MCP servers, or connected LLM API services.
-
-### Incident Response Process
-
-* **Acknowledgment**: Reports will be acknowledged within 24 hours.
-* **Triage & Remediation**: The security lead will investigate the reported resource, revoke any affected keys or tokens, and issue a patch or branch update within 72 hours.
-* **Public Disclosure**: Once patched, a summary of the security advisory will be published if external dependencies were affected.
-
-***
-
-*Maintained by the `cpintl-org` Security and Governance Team.*
+`main` is the only permanent branch and the canonical source. Temporary branches may exist during a pull request but should be deleted after merge or closure. Branch protection and required checks do not replace review of the code, data sensitivity, or external deployment configuration.

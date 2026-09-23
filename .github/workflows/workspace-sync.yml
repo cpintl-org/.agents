@@ -1,0 +1,63 @@
+name: Workspace bridge sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'brains/**'
+      - 'skills/**'
+      - 'guardrails/**'
+      - 'templates/**'
+      - 'memory/**'
+      - 'config/mcp-bridge-mapping.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workspace-sync-main
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    name: Dispatch approved workspace sync
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Install YAML validator
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Validate bridge configuration
+        run: |
+          python - <<'PY'
+          import pathlib, yaml
+          p = pathlib.Path('config/mcp-bridge-mapping.yaml')
+          data = yaml.safe_load(p.read_text())
+          if data.get('defaultRef') != 'main': raise SystemExit('bridge must target main')
+          for bridge in data.get('bridges', []):
+              if bridge.get('mode') != 'read-only': raise SystemExit(f"bridge is not read-only: {bridge.get('id')}")
+          print('bridge configuration is safe')
+          PY
+        env:
+          PYTHONUNBUFFERED: '1'
+
+      - name: Send signed push event to Workspace bridge
+        env:
+          BRIDGE_URL: ${{ secrets.WORKSPACE_BRIDGE_WEBHOOK_URL }}
+          BRIDGE_SECRET: ${{ secrets.WORKSPACE_BRIDGE_WEBHOOK_SECRET }}
+          PAYLOAD: ${{ toJSON(github.event) }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$BRIDGE_URL" || -z "$BRIDGE_SECRET" ]]; then
+            echo 'No Workspace bridge secrets configured; sync is intentionally skipped.'
+            exit 0
+          fi
+          BODY=$(python -c 'import json, os; p=json.loads(os.environ["PAYLOAD"]); p.update({"event":"push", "bridge_secret":os.environ["BRIDGE_SECRET"]}); print(json.dumps(p))')
+          curl --fail-with-body --silent --show-error --max-time 30 \
+            -X POST "$BRIDGE_URL" \
+            -H 'Content-Type: application/json' \
+            --data "$BODY"

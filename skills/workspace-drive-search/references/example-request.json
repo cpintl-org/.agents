@@ -1,0 +1,12 @@
+{
+  "operation": "search_metadata",
+  "owner": "cpintl-org",
+  "repository": ".agents",
+  "ref": "main",
+  "repositoryPath": "skills/workspace-drive-search",
+  "driveFolderId": "{verified-drive-folder-id}",
+  "query": "workspace bridge",
+  "sensitivity": "internal",
+  "requesterRole": "{authorized-role}",
+  "dryRun": true
+}
