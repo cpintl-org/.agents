@@ -8,6 +8,8 @@ A **pull request** is simply a review page for a proposed change. If it passes t
 
 Automatic checks review skill metadata, bundled resource paths, YAML/JSON where applicable, the free-resource matrix, likely credential patterns, unsafe paths, and whitespace. The checks run for pull requests, updates to `main`, manual requests, and a weekly health check. They do not publish external content, send messages, spend money, or delete repository data.
 
+When a small documentation update is pushed directly to `main` for an authorized maintenance test, GitHub records the push and starts the same validation workflow. The branch protection rule remains visible in the repository settings; normal contributors should use a pull request, while an authorized administrator may bypass the rule for controlled recovery or testing.
+
 For ordinary maintenance, describe the desired outcome in plain English. Examples include “add a new skill for spreadsheet validation,” “update the quota reference,” or “clean up a merged branch.” Before any destructive action—such as deleting a repository, removing access, changing billing, or deleting a release—review the exact target and effect.
 
 If an automatic check fails, the change stays outside `main` until it is corrected. The failure message and pull-request URL are the starting point for recovery; do not delete the repository or recreate it.
