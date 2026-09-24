@@ -57,7 +57,9 @@ jobs:
             exit 0
           fi
           BODY=$(python -c 'import json, os; p=json.loads(os.environ["PAYLOAD"]); p.update({"event":"push", "bridge_secret":os.environ["BRIDGE_SECRET"]}); print(json.dumps(p))')
-          curl --fail-with-body --silent --show-error --max-time 30 \
+          RESPONSE=$(curl --fail-with-body --silent --show-error --max-time 30 \
             -X POST "$BRIDGE_URL" \
             -H 'Content-Type: application/json' \
-            --data "$BODY"
+            --data "$BODY")
+          echo "Bridge response received:"
+          echo "$RESPONSE"

@@ -1,0 +1,18 @@
+# Clasp local authentication and project files
+.clasp.json
+.clasprc.json
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Operating system and temporary files
+.DS_Store
+Thumbs.db
+*.log
+scratch/

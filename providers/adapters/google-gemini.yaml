@@ -2,20 +2,22 @@ apiVersion: agents.cpintl.org/v1alpha1
 kind: ModelAdapter
 metadata:
   name: google-gemini-adapter
-  owner: "{responsible-role}"
-  description: "Placeholder for Google Gemini. Verify model names, limits, and data-use terms first."
+  owner: "Health Program Manager"
+  description: "Production configuration for Google Gemini models (Gemini 2.0 Flash / Gemini 1.5 Pro) under CPI free-tier guardrails."
 spec:
   provider: google
-  model: "{model-id}"
-  credentialRef: "{approved-secret-name}"
+  model: gemini-2.0-flash
+  credentialRef: GEMINI_API_KEY
   capabilities:
     structuredOutput: true
-    vision: false
+    vision: true
     tools: true
   limits:
-    contextTokens: "verify-at-runtime"
-    outputTokens: "verify-at-runtime"
-  verifiedOn: "{YYYY-MM-DD}"
+    contextTokens: 1048576
+    outputTokens: 8192
+  verifiedOn: "2026-09-24"
   extensions:
-    providerSpecific:
-      "{provider-field}": "{value}"
+    governance:
+      restrictedDataPermitted: false
+      patientDataPermitted: false
+      cpiBrandCompliant: true

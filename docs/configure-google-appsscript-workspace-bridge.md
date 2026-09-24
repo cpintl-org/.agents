@@ -59,7 +59,7 @@ In the Apps Script editor:
 
 ```json
 {
-  "timeZone": "Etc/UTC",
+  "timeZone": "Asia/Dhaka",
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8",
   "dependencies": {},
@@ -382,15 +382,19 @@ DRY_RUN=false
 
 The current bridge writes the content of changed GitHub files into Google Docs. It is a basic first implementation, not a full bidirectional synchronization system. GitHub remains the canonical source. Do not treat Google Drive edits as authoritative unless a later approved workflow explicitly implements reverse synchronization.
 
-## Important limitation
+## Hierarchy and synchronization behavior
 
-The current bridge does **not** automatically create a complete folder hierarchy for every repository path. It uses the configured root folder and document names. Before using it for a large production library, test duplicate filenames and nested paths carefully.
+The bridge creates nested folders idempotently for changed allowed files received in push events. Keep in mind the following operational boundaries:
 
-For sensitive or high-volume operations, keep the bridge in dry-run mode and use a manually reviewed export process until the organization approves a stronger synchronization design.
+1. **Changed files only**: Nested folders and Google Docs are created only for files present in a received push commit and matched by `ALLOWED_PATHS`.
+2. **No automatic backfill**: Unchanged repository files are not backfilled into Drive automatically on new deployments.
+3. **No automatic deletion**: Deletions in GitHub are not propagated to Drive, ensuring no accidental document destruction.
+4. **Moves create new documents**: Renaming or moving a repository file creates a new document at the destination path and leaves the original Drive document untouched for manual review and archival.
+5. **Text documents only**: Synchronized files are rendered as Google Docs text documents; binary formats are not approved for production synchronization.
 
 ---
 
-The bridge now supports nested folders and duplicate-safe synchronization.
+The bridge supports nested folders and duplicate-safe synchronization:
 
 ## What changed
 

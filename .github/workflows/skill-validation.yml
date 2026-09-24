@@ -30,8 +30,13 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install validation dependency
-        run: python -m pip install --disable-pip-version-check PyYAML
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML jsonschema
 
       - name: Validate skill metadata and references
         shell: bash
@@ -64,6 +69,41 @@ jobs:
 
       - name: Run bundled free-matrix checker
         run: python skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
+
+      - name: Validate prompt templates and schemas
+        run: python skills/prompt-authoring/scripts/validate_prompts.py prompts/library
+
+      - name: Validate agent YAML templates and provider adapters
+        run: python skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
+
+      - name: Validate memory search request templates
+        run: python skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
+
+      - name: Validate all JSON Schemas against Draft 2020-12
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, pathlib, sys, jsonschema
+          checked = 0
+          for root_dir in ['schemas', 'memory', 'evaluation', 'prompts']:
+              p = pathlib.Path(root_dir)
+              if not p.exists(): continue
+              for f in p.rglob('*.json'):
+                  try:
+                      data = json.loads(f.read_text(encoding='utf-8'))
+                  except Exception as exc:
+                      sys.exit(f"Failed to parse JSON file {f}: {exc}")
+                  if isinstance(data, dict) and ('$schema' in data or 'properties' in data or data.get('type') == 'object'):
+                      try:
+                          jsonschema.Draft202012Validator.check_schema(data)
+                          checked += 1
+                      except Exception as exc:
+                          sys.exit(f"Invalid JSON schema {f}: {exc}")
+          print(f"All {checked} JSON Schema files validated successfully against Draft 2020-12")
+          PY
+
+      - name: Run offline bridge behavioral tests
+        run: node workspace-bridge/test-bridge.js
 
       - name: Validate bridge fixture and structured files
         run: |

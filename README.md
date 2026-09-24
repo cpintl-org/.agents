@@ -1,6 +1,58 @@
 # `.agents` — cpintl-org Agent Resources Hub
 
-`.agents` is a provider-neutral repository for reusable agent **brains**, **skills**, **guardrails**, **templates**, **memory schemas**, and an optional Google Workspace bridge. It is designed for non-coders who can edit Google Docs, Google Drive, Markdown, or GitHub files. The repository stores instructions and configuration templates; it is not a database for beneficiary records, a secret manager, or a promise of unlimited free hosting.
+`.agents` is a provider-neutral repository for reusable agent **brains**, **skills**, **guardrails**, **templates**, **memory schemas**, and Google Workspace bridge. It is designed for non-coders who can edit Google Docs, Google Drive, Markdown, or GitHub files. The repository stores instructions and configuration templates; it is not a database for beneficiary records, a secret manager, or a promise of unlimited free hosting.
+
+## What is This Hub?
+
+Think of ```.agents``` as a master AI Control Panel.
+
+Instead of locking my AI setups inside a single app (like only using ChatGPT or only using Gemini), this repository acts as a single, universal storage unit. So any no coder can write my prompts, skills, and rules here, and they automatically sync with your Google Workspace (Docs, Sheets, Shared Drives).
+
+From here, you can connect your agent setup to any AI provider—including Gemini, Google AI Studio, Claude, OpenAI, GitHub Copilot, DeepSeek, or local tools—without ever re-writing your instructions!
+
+## How Everything Fits Together
+
+We structure everything like Lego Blocks. Each component does one specific job, and you can snap them together to build any AI agent you want!
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                              AGENT BRAIN                               │
+│                   (Personality, Role & Instructions)                   │
+└──────────────────┬─────────────────────────────────┬───────────────────┘
+                   │                                 │
+                   ▼                                 ▼
+┌─────────────────────────────────────┐   ┌──────────────────────────────┐
+│               SKILLS                │   │          GUARDRAILS          │
+│   (Tools, Actions & Capabilities)   │   │  (Safety Rules & Boundaries) │
+└──────────────────┬──────────────────┘   └──────────────┬───────────────┘
+                   │                                     │
+                   └──────────────────┬──────────────────┘
+                                      │
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                               TEMPLATES                                │
+│                     (Google Docs / Sheets Outputs)                     │
+└────────────────────────────────────────────────────────────────────────┘
+
+```
+
+## How GitHub & Google Workspace Connect in Real Time
+
+You don't need to manually copy and paste text between GitHub and Google Docs!
+
+```text
+┌────────────────────────┐      Webhook Signal     ┌────────────────────────┐
+│   GitHub (.agents)     │ ──────────────────────> │   Google Apps Script   │
+│  Edit Markdown File    │                         │   (workspace-bridge)   │
+└────────────────────────┘                         └───────────┬────────────┘
+                                                               │
+                                                               ▼
+                                                   ┌────────────────────────┐
+                                                   │   Google Shared Drive  │
+                                                   │  Real-Time Updated Doc │
+                                                   └────────────────────────┘
+
+```
 
 ## Start here
 
@@ -121,16 +173,22 @@ The repository rejects hardcoded secrets, unsafe paths, fabricated provider IDs,
 
 The validation workflow runs on pull requests, pushes to `main`, manual runs, and a weekly schedule. It checks skill metadata and references, the free-resource evidence matrix, YAML/JSON structure, prompt files, agent task templates, model adapters, memory requests, likely secret patterns, unsafe paths, and whitespace. The workspace workflow validates the bridge mapping and skips external dispatch when secrets are not configured.
 
-For local checks, use:
+For local validation, run:
 
 ```bash
-python /home/ubuntu/skills/skill-creator/scripts/quick_validate.py skills/{skill-name}
+# Verify free resource matrix and bridge schema
 python skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
 python skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
+
+# Validate prompt library, agent YAML templates, and memory requests
 python skills/prompt-authoring/scripts/validate_prompts.py prompts/library
 python skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
 python skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
+
+# Run offline bridge behavioral tests
+node workspace-bridge/test-bridge.js
 ```
+
 
 ## Assumptions and boundaries
 

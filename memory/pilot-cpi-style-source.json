@@ -1,0 +1,11 @@
+{
+  "sourceId": "cpi-technical-writing-guide",
+  "type": "repository",
+  "locator": "skills/cpintl-org-writing-skill/references/writing-style-guidance.md",
+  "sensitivity": "public",
+  "ownerRole": "Health Program Manager",
+  "approvedBy": "Mohammad Ariful",
+  "approvedOn": "2026-09-24",
+  "excludePatterns": [],
+  "reviewEveryDays": 90
+}

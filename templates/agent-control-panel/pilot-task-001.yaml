@@ -1,0 +1,39 @@
+# AgentTask: pilot-task-001 — the repository's first controlled low-risk pilot.
+# Uses the manual-review adapter and the approved CPI technical writing source.
+# Safe defaults: no AI model, no patient data, human approval required.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentTask
+metadata:
+  name: pilot-task-001
+  owner: "Health Program Manager"
+  description: "Summarize the CPI Technical Writing Style Guide for human review using only the approved source."
+spec:
+  objective: "Produce a short evidence summary of the CPI technical writing guidance (skills/cpintl-org-writing-skill/references/writing-style-guidance.md) for a Health Program Manager to review. Cite the approved source for every claim, do not invent facts, mark any gap as UNKNOWN, and include no patient, personal, or restricted data."
+  brain: brains/doc-writer-agent.md
+  skills:
+    - skills/cpintl-org-writing-skill
+  prompt: prompts/library/evidence-summary.prompt
+  workspaceRef:
+    kind: AgentWorkspace
+    name: approved-reference-library
+    uri: memory/pilot-cpi-style-source.json
+  policyRef:
+    kind: AgentPolicy
+    name: internal-human-review
+  modelRef:
+    kind: ModelAdapter
+    name: manual-review-adapter
+  output:
+    format: markdown
+    template: templates/google-docs-outline.md
+  lifecycle:
+    allowPause: true
+    allowResume: true
+status:
+  phase: completed
+  conditions:
+    - type: SourceValidated
+      status: "True"
+    - type: HumanApproval
+      status: "True"
+      reason: "Approved"

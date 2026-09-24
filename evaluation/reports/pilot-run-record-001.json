@@ -1,0 +1,23 @@
+{
+  "runId": "pilot-cpi-run-001",
+  "promptName": "evidence-summary",
+  "promptVersion": "1.0.0",
+  "brainVersion": "doc-writer-agent-v1",
+  "skillVersions": [
+    "cpintl-org-writing-skill-v1",
+    "prompt-authoring-v1"
+  ],
+  "provider": "manual-review",
+  "model": "none",
+  "inputClassification": "public",
+  "toolCalls": [
+    "memory_source_lookup:cpi-technical-writing-guide"
+  ],
+  "outputValid": true,
+  "humanApproval": "approved",
+  "latencyMs": 0,
+  "usageNote": "Baseline pilot execution: manual review verification of CPI Technical Writing Guide summary without patient or restricted data.",
+  "safetyFindings": [],
+  "factualityScore": 5,
+  "recordedAt": "2026-09-24T16:00:00Z"
+}

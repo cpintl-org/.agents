@@ -14,11 +14,11 @@ providers:
     dataUseNote: "No data leaves your control."
     verifiedOn: "not-applicable"
   - providerId: google-gemini
-    displayName: "Google Gemini (app or API)"
+    displayName: "Google Gemini (Gemini 2.0 Flash / 1.5 Pro via Google AI Studio API or Antigravity)"
     adapterFile: adapters/google-gemini.yaml
-    costModel: verify
-    dataUseNote: "verify: free-tier data-use terms"
-    verifiedOn: "{YYYY-MM-DD}"
+    costModel: "Free tier via Google AI Studio (rate limits apply; no credit card required)"
+    dataUseNote: "Aggregate/programmatic NGO operations only; strictly no patient or PII data"
+    verifiedOn: "2026-09-24"
   - providerId: anthropic-claude
     displayName: "Anthropic Claude (app or API)"
     adapterFile: adapters/anthropic-claude.yaml

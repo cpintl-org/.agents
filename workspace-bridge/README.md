@@ -17,8 +17,8 @@ This Apps Script project is an optional, user-deployed bridge. It does not creat
 
 1. Create or open an Apps Script project owned by the responsible Workspace account.
 2. Copy `Code.gs` and `appsscript.json`, set properties through the Apps Script editor, and keep `DRY_RUN=true`.
-3. Deploy as a Web app only after reviewing access and data sensitivity. The endpoint should be called by the GitHub workflow with the secret header.
-4. Send a synthetic `push` event and verify the audit row/log before allowing writes.
+3. Deploy as a Web app only after reviewing access and data sensitivity. The endpoint is called by the GitHub Actions workflow with the bridge secret in the JSON payload (`bridge_secret`).
+4. Send a synthetic `push` event and verify the returned `auditId` and Apps Script execution log before allowing writes.
 5. Change `DRY_RUN` only after human approval and a recovery test.
 
 This bridge is not a guaranteed real-time service. If properties, token, mapping, or permissions are unavailable, it returns an error or manual-review status without changing Drive.
