@@ -9,7 +9,7 @@
 ## Current inventory summary
 
 - **Brains:** `brains/` contains role definitions and creation guidance.
-- **Skills:** `skills/` contains seven reusable skills, bundled references, templates, and validators.
+- **Skills:** `skills/` contains eight reusable skills, bundled references, templates, and validators.
 - **Guardrails:** `guardrails/` contains security, retention, and adoption-boundary rules.
 - **Prompts:** `prompts/` contains the prompt convention, example prompts, shared partials, schemas, and synthetic fixtures.
 - **Schemas:** `schemas/` contains neutral task, workspace, policy, model, agent, approval, checkpoint, lifecycle, and run schemas.
@@ -32,6 +32,7 @@
 - [x] CI validation workflow (`skill-validation.yml`) installs `PyYAML` and `jsonschema`, executing prompt, agent YAML, memory request, JSON Schema (Draft 2020-12), and offline bridge behavioral test suites.
 - [x] Offline behavioral test suite (`workspace-bridge/test-bridge.js`) passes all 11 critical path and security test cases.
 - [x] Low-risk baseline pilot completed: `cpi-technical-writing-guide` source registered, human review rubric evaluated, and evaluation report archived in `evaluation/reports/`.
+- [x] `cpintl-org-brand` skill reworked: Font Awesome Free 7.3.1 department icons vendored (CC BY 4.0 attributed, unmodified), 16 department badges generated, cover pages now generated on demand into gitignored `build/covers/` (never committed), and a standard-library-only 84-check asset validator added and wired into CI.
 
 ---
 

@@ -1,68 +1,102 @@
-# AGENTS.md — CPI NGO Operations Workspace
-> This file follows the open **AGENTS.md** standard (agents.md), which is auto-read by
-> Antigravity CLI/`agy`, GitHub Copilot, OpenAI Codex, Cursor, Windsurf, and (per its docs)
-> still honored by legacy Gemini CLI installs. Continue and Cline don't auto-read this file —
-> for those, copy the "Persona block" near the bottom into their custom-instructions setting.
-> Place this file at the root of your workspace folder (e.g. `cpintl-org/.agents/AGENTS.md`).
+# AGENTS.md — `.agents` (cpintl-org agent resources hub)
 
-## Who is working here
+Provider-neutral repository of reusable agent **brains, skills, guardrails, templates,
+memory schemas, prompts, providers, evaluation records**, plus an optional Google Workspace
+bridge. It stores instructions and configuration templates — **not** beneficiary records, a
+secret manager, or free hosting.
 
-The operator, Mohammad Ariful, is a **non-coder** — a Health Program Manager, not a developer. Assume no familiarity with programming terminology. Explain technical steps in plain language. Prefer GUI
-click-by-click instructions over raw commands. When a terminal command truly is unavoidable,
-state the exact folder the terminal should be open in *before* the command, and explain what the
-command does in one plain sentence.
+> A second instruction file is loaded from the parent folder: `../AGENTS.md` (CPI Bangladesh
+> Workspace). It governs the `GoogleDrive/` + `RawFiles/` → `processed/` → `output/context/`
+> pipeline, including its read-only Drive rules. Follow it for that pipeline; this file governs
+> the `.agents` repository itself.
 
-## What this workspace is for
+## Operator
 
-This single monorepo named ```.agents``` inside ```cpintl-org``` keeps your entire universe of brains, skills, guardrails, and templates in one place—super easy for vibe-coding and effortless to keep in sync with Google Workspace!
+Ariful is a **non-coder** — a Health Program Manager, not a developer. Use plain language,
+prefer GUI click-by-click steps over raw commands, state the exact folder before any terminal
+command, and explain each command in one plain sentence.
 
-It's a provider-neutral repository for reusable agent **brains**, **skills**, **guardrails**, **templates**, **memory schemas**, and  Google Workspace bridge. It is designed for non-coders who can edit Google Docs, Google Drive, Markdown, or GitHub files. The repository stores instructions and configuration templates; it is not a database for beneficiary records, a secret manager, or a promise of unlimited free hosting.
+## Layout — what lives where
 
-This repository aim to instead of locking my AI setups inside a single app (like only using ChatGPT or only using Gemini), this repository acts as a single, universal storage unit. So that no coder person can write prompts, skills, and rules here, and they automatically sync with Google Workspace (Docs, Sheets, Drives).
+- `skills/<kebab-name>/SKILL.md` — 8 skills; the `description` frontmatter is the trigger.
+  See `skills/README.md` for the index and package rules.
+- `brains/` role docs · `guardrails/` security/retention rules · `templates/` agent YAML +
+  control-panel CSVs · `prompts/` versioned `.prompt` files · `schemas/` neutral rulebooks
+- `providers/` catalog + adapters · `memory/` read-only memory contracts · `evaluation/`
+  rubrics + run records · `docs/` plain-language guides (start with `no-coder-maintenance.md`)
+- `workspace-bridge/` — optional Apps Script bridge. CI enforces `DRY_RUN ... true`,
+  `defaultMode: read-only`, and `allowWrite: false`; write mode stays off until a human approves.
+- `config/` — `repository-manifest.yaml`, `mcp-bridge-mapping.yaml`, `naming-policy.yaml`.
 
-This is the working environment for building **Community Partners International (CPI) Bangladesh
-Mission's NGO Operations system**: Google Workspace–native registers, HIS/MEL reporting support,
-Apps Script automation, Sheets/Drive/Forms workflows, and CPI-branded document generation.
+## Environment gotchas (agents would guess these wrong)
 
-The organization's non-negotiable constraints:
+- Use `python3` on this machine — `python` is not on PATH (CI runners use `python`). Validators
+  are standard-library only except the pinned CI deps (`PyYAML`, `jsonschema`); do not `pip install`
+  to run them.
+- **Brand covers are generated, never stored.** `skills/cpintl-org-brand/build/` is gitignored;
+  regenerate on demand and copy outputs into Drive. `scripts/validate_brand_assets.py` enforces
+  this. Badge icons (SVG+PNG) are committed and small; Docs cannot take SVG, so PNGs exist too.
+- Vendored Font Awesome Free 7.3.1 icons are **CC BY 4.0** — keep their inline license comments
+  and `ATTRIBUTION.md`. Official CPI logo files are never redrawn, rotated, or recolored.
+- `main` is the only permanent branch. Direct push to `main` is permitted for this operator
+  (controlled maintenance; the validation workflow runs on every push). Normal contributors use
+  pull requests.
+- No new AI providers, paid tiers, or software installs without asking first. Quotas/pricing must
+  be re-verified at execution time — `references/free-resource-matrix.md` is dated evidence, not a
+  live promise (Gemini CLI pricing changed in June 2026; watch for similar drift).
 
-- **Zero cost.** No paid tiers, no credit card, nothing that could later start charging silently.
-- **Sustainability.** Prefer tools/approaches that keep working indefinitely without maintenance.
-- **Google Workspace–first**, not a separately managed standard Google Cloud project, unless a
-  task explicitly requires one (Apps Script's own default Cloud project doesn't count as "adding
-  a project").
+## Verify before committing
 
-## Hard rules — do not violate these
+Mirror of `.github/workflows/skill-validation.yml`, from the repo root:
 
-1. **Never invent a fact, URL, quota number, or "the docs say X" claim.** If uncertain, say so
-   and either search for it or flag it as something to verify — never present a guess as
-   confirmed. (This mirrors the project's own `verified-resource-index.md` policy: cite a real
-   source or say "unverified.")
-2. **No patient-identifiable or clinical data** goes into any AI prompt, any free-tier model, or
-   any file outside an explicitly approved restricted system. Aggregate/program data only, unless
-   Ariful has explicitly said a specific record type is approved.
-3. **Don't silently pick a system of record.** If a task touches data that might already live in
-   DHIS2, InfoMx, the volunteer HIS, or Oracle, ask which system is authoritative before writing
-   automation that could create a competing "shadow" copy.
-4. **No destructive actions without confirmation.** Never delete, overwrite, un-share, or mass-
-   modify real Drive files, Sheets rows, or Apps Script deployments without an explicit go-ahead
-   for that specific action. Prefer dry-run/preview modes when a tool offers one.
-5. **Brand compliance for anything client- or leadership-facing**: use the official CPI palette
-   (CPI Red `#D91E4D`, CPI Purple `#41273B`, CPI Black `#2D2926`, CPI Mid Grey `#948794`, CPI
-   Blue/Teal `#4298B5`, CPI Secondary Purple `#615E9B`, CPI Light Grey `#D0C4C5`) and Arial for
-   Workspace documents. Flag anything meant for wide rollout as needing leadership sign-off first.
-6. **Stay inside the free tier.** Before suggesting any tool, API, or service, confirm it has a
-   genuinely free-forever path with no card requirement. If a tool changed its pricing recently
-   (the way Gemini CLI did in June 2026), say so plainly instead of assuming old notes are current.
+```bash
+python3 skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
+python3 skills/prompt-authoring/scripts/validate_prompts.py prompts/library
+python3 skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
+python3 skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
+python3 skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
+python3 skills/cpintl-org-brand/scripts/validate_brand_assets.py
+node workspace-bridge/test-bridge.js
+git diff --check
+```
 
-## Default working style
+CI also enforces: every `SKILL.md` under 500 lines with `name:`/`description:` frontmatter and
+every `references|scripts|templates/...` file existing; all YAML/JSON parse; a clean
+secrets/unsafe-path scan.
 
-- Small, reversible steps. Explain what you're about to do before doing it.
-- When writing Apps Script / Sheets / Drive automation, follow the patterns already validated in
-  this project's own reference docs: `LockService` for concurrent writes, idempotent
-  request IDs, self-scheduling triggers for anything near the 6-minute execution limit, and
-  metadata-as-code (`appProperties`) instead of hard-coded file IDs.
-- Prefer editing/extending the existing provisioner and template pack described in the project's
-  Shared Drive and NGO Operations docs over building a parallel system from scratch.
-- If a request would require patient-level data, a new standing Google Cloud project, or a paid
-  service, stop and ask rather than improvising a workaround.
+## Hard rules — never violate
+
+1. **Never invent a fact, URL, quota number, or "the docs say X" claim.** Cite a real source or
+   mark it unverified — never present a guess as confirmed.
+2. **No patient-identifiable or clinical data** in any AI prompt, free-tier model, or file
+   outside an explicitly approved restricted system. Aggregate/program data only, unless Ariful
+   approves a specific record type.
+3. **Don't silently pick a system of record.** If data may already live in DHIS2, InfoMx, the
+   volunteer HIS, or Oracle, ask which system is authoritative before writing automation.
+4. **No destructive actions without confirmation.** Never delete, overwrite, un-share, or
+   mass-modify real Drive files, Sheets rows, or Apps Script deployments without an explicit
+   go-ahead for that specific action. Prefer dry-run/preview modes.
+5. **Brand compliance for client- or leadership-facing work:** official CPI palette (`#D91E4D`,
+   `#41273B`, `#2D2926`, `#948794`, `#4298B5`, `#615E9B`, `#D0C4C5`) and Arial in Workspace docs —
+   use the `cpintl-org-brand` skill. Anything for wide rollout needs leadership sign-off first.
+6. **Stay inside the free tier.** No paid tiers or card-required services; say plainly when
+   something's pricing changed recently instead of assuming old notes are current.
+
+## Working style
+
+- Small, reversible steps; explain what you're about to do before doing it.
+- Apps Script / Sheets / Drive automation follows patterns already validated in this repo's docs:
+  `LockService` for concurrent writes, idempotent request IDs, self-scheduling triggers near the
+  6-minute execution limit, metadata-as-code (`appProperties`) instead of hard-coded file IDs.
+- Prefer extending the existing provisioner and template pack over building a parallel system.
+- If a request needs patient-level data, a new Google Cloud project, or a paid service, stop and ask.
+
+## Persona block — for tools that don't auto-read AGENTS.md (Continue, Cline)
+
+You assist Mohammad Ariful, a non-coder Health Program Manager at CPI Bangladesh. Use plain
+language; prefer GUI steps over commands; give the exact folder and one plain sentence per
+command when a terminal command is unavoidable. Never invent facts, URLs, or quota numbers — cite
+sources or mark unverified. No patient-identifiable or clinical data in prompts or outputs;
+aggregate/program data only. No destructive actions without explicit confirmation. Use the
+official CPI palette and Arial for branded material (`cpintl-org-brand` skill). Stay inside the
+free tier; ask before adding paid services, new providers, or software installs.

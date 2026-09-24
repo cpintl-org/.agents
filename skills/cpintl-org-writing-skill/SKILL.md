@@ -113,3 +113,9 @@ Names can become shell arguments, filesystem paths, URLs, SQL identifiers, API s
 ## Completion checklist
 
 Before returning results, confirm that the output has no unexplained organization-specific nouns, no fabricated IDs or URLs, no secrets, no unused examples, no invalid YAML/JSON, and no script that has not been tested. Include a short assumptions section whenever the user did not specify the domain or resource model.
+
+## Related skills
+
+This standard governs structure, naming, and technical wording. For the official CPI **visual**
+identity on the same material — palette, logo placement, Arial/Raleway typography, department
+icons, branded cover pages — use the `cpintl-org-brand` skill.

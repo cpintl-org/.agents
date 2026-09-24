@@ -108,6 +108,7 @@ The system is provider-agnostic. The same instructions may be used with Gemini, 
 ├── skills/
 │   ├── README.md
 │   ├── cpintl-org-writing-skill/       # Naming, structure, technical writing
+│   ├── cpintl-org-brand/               # CPI palette, logos, department icons, covers
 │   ├── google-workspace-free-serverless/ # Quota-safe Workspace patterns
 │   ├── github-repository-operations/  # No-coder GitHub management
 │   ├── workspace-drive-search/         # Approved Drive search contract and validator
@@ -187,6 +188,9 @@ python skills/memory-search/scripts/validate_memory_request.py skills/memory-sea
 
 # Run offline bridge behavioral tests
 node workspace-bridge/test-bridge.js
+
+# Validate CPI brand skill assets (palette, 16 departments, Font Awesome icons, no stored covers)
+python skills/cpintl-org-brand/scripts/validate_brand_assets.py
 ```
 
 

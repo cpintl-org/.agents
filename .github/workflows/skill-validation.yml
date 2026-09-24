@@ -67,6 +67,9 @@ jobs:
             done < <(grep -oE '(references|scripts|templates)/[A-Za-z0-9_./-]+' "$skill_file" | sort -u || true)
           done
 
+      - name: Validate CPI brand skill assets
+        run: python skills/cpintl-org-brand/scripts/validate_brand_assets.py
+
       - name: Run bundled free-matrix checker
         run: python skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
 

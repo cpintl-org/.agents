@@ -93,3 +93,8 @@ python scripts/verify_free_matrix.py references/free-resource-matrix.md
 ```
 
 For repository work, also validate names and paths with the cpintl-org writing standard, check Markdown links and structured files, scan for secrets and traversal, run `git diff --check`, and test every script with valid and invalid inputs.
+
+## Related skills
+
+When the resulting Doc, Sheet, Slide, or template must carry the official CPI look, pair this
+skill with `cpintl-org-brand` (official palette, Arial, logos, department icons, cover pages).
