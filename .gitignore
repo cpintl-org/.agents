@@ -16,3 +16,6 @@ env/
 Thumbs.db
 *.log
 scratch/
+
+# Generated cover pages (brand skill) — covers are generated on demand, never committed
+skills/cpintl-org-brand/build/

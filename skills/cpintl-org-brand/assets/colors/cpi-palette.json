@@ -1,0 +1,81 @@
+{
+  "_source": "CPI Brand Identity Standards & Master Style Guide — Bangladesh Mission",
+  "_note": "These are the ONLY approved colors. Never introduce a color outside this list into any CPI material.",
+  "colors": {
+    "cpi_red": {
+      "hex": "#D91E4D",
+      "rgb": [217, 30, 77],
+      "usage": "Primary accent, Heading 1, key buttons, callout borders, header rules"
+    },
+    "cpi_purple": {
+      "hex": "#41273B",
+      "rgb": [65, 39, 59],
+      "usage": "Logo mark, Heading 2/3, table headers, cover backgrounds, dark panels"
+    },
+    "cpi_black": {
+      "hex": "#2D2926",
+      "rgb": [45, 41, 38],
+      "usage": "Body narrative text, table cell contents, high-contrast digital reading"
+    },
+    "cpi_mid_grey": {
+      "hex": "#948794",
+      "rgb": [148, 135, 148],
+      "usage": "Captions, image credits, table gridlines (0.5pt), footer text"
+    },
+    "cpi_blue_teal": {
+      "hex": "#4298B5",
+      "rgb": [66, 152, 181],
+      "usage": "WASH & Clean Energy focus, chart series 3, secondary callout badges"
+    },
+    "cpi_secondary_purple": {
+      "hex": "#615E9B",
+      "rgb": [97, 94, 155],
+      "usage": "Chart visualization series 2, secondary structural callouts"
+    },
+    "cpi_light_grey": {
+      "hex": "#D0C4C5",
+      "rgb": [208, 196, 197],
+      "usage": "Alternating table row fills (at 30% opacity), background card panels"
+    }
+  },
+  "typography": {
+    "designed_printed_materials": {
+      "font": "Raleway",
+      "source": "Google Font",
+      "weights": ["Bold", "SemiBold", "Regular"]
+    },
+    "office_digital_workspace_docs": {
+      "font": "Arial",
+      "source": "System Font",
+      "weights": ["Bold", "Regular"],
+      "_note": "Use this family inside Google Docs/Sheets/Slides — Raleway is for designed/printed collateral (posters, PDFs), not native Workspace documents."
+    },
+    "hierarchy": {
+      "title":     { "font": "Arial", "weight": "Bold", "size_pt": 24, "color": "cpi_purple" },
+      "heading_1": { "font": "Arial", "weight": "Bold", "size_pt": 18, "color": "cpi_red" },
+      "heading_2": { "font": "Arial", "weight": "Bold", "size_pt": 14, "color": "cpi_purple" },
+      "heading_3": { "font": "Arial", "weight": "Bold", "size_pt": 12, "color": "cpi_purple" },
+      "body":      { "font": "Arial", "weight": "Regular", "size_pt": 11, "color": "cpi_black", "line_spacing": 1.25 },
+      "caption":   { "font": "Arial", "weight": "Regular Italic", "size_pt": 9, "color": "cpi_mid_grey" }
+    }
+  },
+  "logo_rules": {
+    "clear_space": "Equal to the x-width of the letter 'P' in the CPI logo, on all four sides",
+    "min_size_primary_cm": 0.5,
+    "min_size_secondary_vertical_cm": 0.9,
+    "on_white_background": "full-color logo",
+    "on_brand_color_background": "white reversed logo (CPI Purple, CPI Red, or CPI Black backgrounds only)",
+    "never": [
+      "rotate, distort, or stretch the logo",
+      "change the logo colors or apply drop shadows",
+      "place the logo on top of busy photos or unapproved colors"
+    ]
+  },
+  "file_naming_convention": {
+    "pattern": "CPI-BGD-{ProgramCode}-{DocumentType}-{YYYYMM}-v{Version}.{ext}",
+    "approved_document_types": [
+      "MonthlyReport", "QReport", "AnnualReport", "SitRep", "SOP",
+      "TrainingManual", "ConceptNote", "MeetingMinutes", "Presentation", "FieldReport"
+    ]
+  }
+}

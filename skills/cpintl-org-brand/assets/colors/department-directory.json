@@ -1,0 +1,45 @@
+{
+  "_note_please_read": "The brand guide lists 16 approved Program Codes but only explicitly assigns an accent color to two of them (WASH and Clean Energy -> CPI Blue/Teal). Everything else in 'accent_color' below is MY proposed extension, grouped by theme, using ONLY colors already in the approved palette — it is NOT stated in the PDF. Please review and tell me if CPI leadership wants a different grouping before this goes into production templates.",
+  "themes": {
+    "Health and Nutrition (HN)": {
+      "accent_color": "cpi_red",
+      "reason_if_proposed": "CPI Red is the guide's 'primary accent' color; Health is CPI's largest and lead impact area.",
+      "programs": [
+        { "code": "HOP", "name": "Health Outreach Program" },
+        { "code": "HPP", "name": "Health Post Program" },
+        { "code": "HSS", "name": "Health System Strengthening Program" }
+      ]
+    },
+    "Sustainable Development (SD)": {
+      "accent_color": "cpi_blue_teal",
+      "reason_if_proposed": "Explicitly stated in the guide for WASH & Clean Energy; extended here to Education and Livelihood as the same theme group.",
+      "programs": [
+        { "code": "WASH", "name": "WASH" },
+        { "code": "CleanEnergy", "name": "Clean Energy" },
+        { "code": "Education", "name": "Education" },
+        { "code": "Livelihood", "name": "Livelihood" }
+      ]
+    },
+    "Research and Development (RD)": {
+      "accent_color": "cpi_secondary_purple",
+      "reason_if_proposed": "CPI Secondary Purple is designated for chart/data visualization in the guide, fitting an evidence-based research theme.",
+      "programs": [
+        { "code": "RD", "name": "Research and Development" }
+      ]
+    },
+    "Cross-Program Department": {
+      "accent_color": "cpi_purple",
+      "reason_if_proposed": "CPI Purple is used for table headers/dark panels in the guide, suiting internal operations & admin documents.",
+      "programs": [
+        { "code": "M&E", "slug": "MonEval", "name": "Monitoring and Evaluation" },
+        { "code": "HIMS", "name": "Health Information Management System" },
+        { "code": "Finance", "name": "Finance" },
+        { "code": "Logistics", "name": "Logistics" },
+        { "code": "Warehouse", "name": "Warehouse" },
+        { "code": "HR", "name": "Human Resource and Admin" },
+        { "code": "FieldCoordination", "name": "Field Coordination" },
+        { "code": "MediaComms", "name": "Media and Communication" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "_note": "Maps every approved CPI Bangladesh department/program code to a Font Awesome Free 7.3.1 solid icon. These are the ONLY icons used for department badges in this skill. Icons are licensed CC BY 4.0 — see ATTRIBUTION.md and FONT-AWESOME-FREE-LICENSE.txt in this folder. If a code is missing here, the generator and validator will fail loudly rather than silently produce an unbranded asset.",
+  "icons": {
+    "HOP": "heart-pulse",
+    "HPP": "house-medical",
+    "HSS": "building-shield",
+    "WASH": "faucet-drip",
+    "CleanEnergy": "solar-panel",
+    "Education": "graduation-cap",
+    "Livelihood": "hand-holding-heart",
+    "RD": "flask",
+    "M&E": "magnifying-glass-chart",
+    "HIMS": "database",
+    "Finance": "sack-dollar",
+    "Logistics": "truck-fast",
+    "Warehouse": "warehouse",
+    "HR": "users",
+    "FieldCoordination": "map-location-dot",
+    "MediaComms": "bullhorn"
+  }
+}
