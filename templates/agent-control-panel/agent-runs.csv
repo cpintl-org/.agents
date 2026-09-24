@@ -1,0 +1,2 @@
+runId,taskId,phase,startedOn,ownerRole,outcome,notes
+run-001,task-001,created,{YYYY-MM-DD},{owner-role},,

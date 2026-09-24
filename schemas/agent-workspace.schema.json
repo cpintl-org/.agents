@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentWorkspace: approved sources and tools",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "agents.cpintl.org/v1alpha1"
+    },
+    "kind": {
+      "const": "AgentWorkspace"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+        },
+        "owner": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sources"
+      ],
+      "properties": {
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sourceId",
+              "type"
+            ],
+            "properties": {
+              "sourceId": {
+                "type": "string",
+                "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "repository",
+                  "google_drive",
+                  "google_sheet",
+                  "url",
+                  "manual"
+                ]
+              },
+              "locator": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "scope": {
+                "type": "string",
+                "maxLength": 300
+              },
+              "sensitivity": {
+                "type": "string",
+                "enum": [
+                  "public",
+                  "internal",
+                  "restricted"
+                ]
+              }
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "capability"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+              },
+              "capability": {
+                "type": "string",
+                "enum": [
+                  "search",
+                  "read",
+                  "write",
+                  "notify",
+                  "compute"
+                ]
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "read-only",
+                  "dry-run",
+                  "write-with-approval"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

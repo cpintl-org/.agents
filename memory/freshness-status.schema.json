@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Freshness status of a registered source",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sourceId",
+    "freshness",
+    "checkedAt"
+  ],
+  "properties": {
+    "sourceId": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+    },
+    "freshness": {
+      "type": "string",
+      "enum": [
+        "current",
+        "stale",
+        "unknown",
+        "source_missing"
+      ]
+    },
+    "lastKnownRevision": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "currentRevision": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "checkedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 300
+    }
+  }
+}

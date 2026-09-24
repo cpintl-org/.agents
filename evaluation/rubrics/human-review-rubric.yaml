@@ -1,0 +1,26 @@
+rubricId: human-review-basic
+criteria:
+  - id: sources-listed
+    question: "Is every important claim tied to a named approved source?"
+    scale: yes_no
+    blocking: true
+  - id: no-invented-facts
+    question: "Are there any facts, numbers, or sources that cannot be found in the approved sources?"
+    scale: yes_no
+    blocking: true
+  - id: sensitive-data
+    question: "Does the output contain personal, patient, safeguarding, or credential information?"
+    scale: yes_no
+    blocking: true
+  - id: unknowns-marked
+    question: "Are gaps marked as UNKNOWN instead of guessed?"
+    scale: yes_no
+    blocking: false
+  - id: clarity
+    question: "How clear is the writing for the intended reader?"
+    scale: one_to_five
+    blocking: false
+  - id: factual-accuracy
+    question: "Overall factual accuracy after checking against sources."
+    scale: one_to_five
+    blocking: false

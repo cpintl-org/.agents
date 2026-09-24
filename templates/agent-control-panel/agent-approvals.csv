@@ -1,0 +1,2 @@
+approvalId,runId,decision,reviewerRole,decidedOn,sourcesChecked,noSensitiveDataExposed,factsMatchSources,readyToShare,note
+approval-001,run-001,needs_changes,{reviewer-role},{YYYY-MM-DD},FALSE,FALSE,FALSE,FALSE,

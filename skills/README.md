@@ -20,3 +20,12 @@ python /home/ubuntu/skills/skill-creator/scripts/quick_validate.py skills/{skill
 ```
 
 The repository workflow also checks metadata, references, free-resource evidence, likely secrets, unsafe paths, and whitespace.
+
+## Skills for agent work
+
+| Skill | Use it to |
+|---|---|
+| `prompt-authoring` | Save and check reusable prompts |
+| `memory-search` | Recall approved facts with source and freshness (read-only) |
+| `agent-task-planning` | Plan a task with a workspace, policy, model, and approval |
+| `workspace-drive-search` | Find approved Drive resources |

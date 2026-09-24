@@ -1,0 +1,37 @@
+# AgentTask: WHAT the agent should do. Fill every "{...}" in plain language.
+# Where to edit: any text editor, Google Docs (paste as plain text), or the GitHub website pencil icon.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentTask
+metadata:
+  name: monthly-health-report
+  owner: "{responsible-role}"
+  description: "{one sentence describing the task}"
+spec:
+  objective: "{plain-language objective}"
+  brain: brains/doc-writer-agent.md
+  skills:
+    - skills/workspace-drive-search
+  prompt: prompts/library/evidence-summary.prompt
+  workspaceRef:
+    kind: AgentWorkspace
+    name: approved-reference-library
+  policyRef:
+    kind: AgentPolicy
+    name: internal-human-review
+  modelRef:
+    kind: ModelAdapter
+    name: manual-review-adapter
+  output:
+    format: google-docs
+    template: templates/google-docs-outline.md
+  lifecycle:
+    allowPause: true
+    allowResume: true
+status:
+  phase: created
+  conditions:
+    - type: SourceValidated
+      status: "Unknown"
+    - type: HumanApproval
+      status: "False"
+      reason: ReviewRequired

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Evaluation run record (no raw restricted content)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "runId",
+    "promptName",
+    "promptVersion",
+    "provider",
+    "model",
+    "inputClassification",
+    "outputValid",
+    "humanApproval",
+    "recordedAt"
+  ],
+  "properties": {
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "promptName": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+    },
+    "promptVersion": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "brainVersion": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "skillVersions": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "maxLength": 64
+      }
+    },
+    "provider": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "model": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "inputClassification": {
+      "type": "string",
+      "enum": [
+        "public",
+        "internal",
+        "restricted"
+      ]
+    },
+    "toolCalls": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      }
+    },
+    "outputValid": {
+      "type": "boolean"
+    },
+    "humanApproval": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "rejected"
+      ]
+    },
+    "latencyMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "usageNote": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "safetyFindings": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "maxLength": 300
+      }
+    },
+    "factualityScore": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

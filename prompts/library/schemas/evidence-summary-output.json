@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "evidence-summary output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["verifiedFacts", "assumptions", "limitations", "unresolvedQuestions"],
+  "properties": {
+    "verifiedFacts": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+      "required": ["fact", "source"], "properties": {"fact": {"type": "string"}, "source": {"type": "string"}}}},
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "unresolvedQuestions": {"type": "array", "items": {"type": "string"}}
+  }
+}

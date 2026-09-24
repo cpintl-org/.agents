@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HumanApproval: a person's yes or no on a run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "approvalId",
+    "runId",
+    "decision",
+    "reviewerRole",
+    "decidedOn"
+  ],
+  "properties": {
+    "approvalId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "rejected",
+        "needs_changes"
+      ]
+    },
+    "reviewerRole": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "decidedOn": {
+      "type": "string",
+      "format": "date"
+    },
+    "checklist": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sourcesChecked": {
+          "type": "boolean"
+        },
+        "noSensitiveDataExposed": {
+          "type": "boolean"
+        },
+        "factsMatchSources": {
+          "type": "boolean"
+        },
+        "readyToShare": {
+          "type": "boolean"
+        }
+      }
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 500
+    }
+  }
+}

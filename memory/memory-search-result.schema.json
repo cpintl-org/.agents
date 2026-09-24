@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Memory search result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "results",
+    "redactionApplied"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "manual_review",
+        "denied",
+        "error"
+      ]
+    },
+    "results": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "memoryId",
+          "excerpt",
+          "source",
+          "freshness"
+        ],
+        "properties": {
+          "memoryId": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "excerpt": {
+            "type": "string",
+            "maxLength": 600
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "uri",
+              "revision"
+            ],
+            "properties": {
+              "uri": {
+                "type": "string"
+              },
+              "repositoryPath": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              }
+            }
+          },
+          "freshness": {
+            "type": "string",
+            "enum": [
+              "current",
+              "stale",
+              "unknown",
+              "source_missing"
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "reviewed",
+              "approved"
+            ]
+          }
+        }
+      }
+    },
+    "redactionApplied": {
+      "type": "boolean"
+    },
+    "auditId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "errorCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

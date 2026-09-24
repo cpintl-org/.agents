@@ -1,0 +1,12 @@
+# HumanApproval: the person's decision. A run marked "needs review" stays paused until this exists.
+approvalId: approval-001
+runId: evidence-run-001
+decision: needs_changes
+reviewerRole: "{reviewer-role}"
+decidedOn: "2026-01-01"
+checklist:
+  sourcesChecked: false
+  noSensitiveDataExposed: false
+  factsMatchSources: false
+  readyToShare: false
+note: "{short plain note, no personal data}"

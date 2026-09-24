@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Evaluation test case (synthetic data only)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "caseId",
+    "promptName",
+    "input",
+    "expect"
+  ],
+  "properties": {
+    "caseId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "promptName": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+    },
+    "synthetic": {
+      "const": true
+    },
+    "input": {
+      "type": "object"
+    },
+    "expect": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mustInclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mustNotInclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outputMustValidate": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -15,10 +15,18 @@
 | Configure GitHub-to-Workspace mapping | [`config/mcp-bridge-mapping.yaml`](config/mcp-bridge-mapping.yaml) |
 | Deploy the optional bridge | [`workspace-bridge/README.md`](workspace-bridge/README.md) |
 | Manage GitHub without coding | [`skills/github-repository-operations/SKILL.md`](skills/github-repository-operations/SKILL.md) |
+| Understand the agent layers in plain words | [`docs/plain-language-guide.md`](docs/plain-language-guide.md) |
+| Plan an agent task (Google Sheets, no coding) | [`templates/agent-control-panel/README.md`](templates/agent-control-panel/README.md) |
+| Save a reusable prompt | [`prompts/README.md`](prompts/README.md) |
+| Choose or switch an AI provider | [`providers/README.md`](providers/README.md) |
+| Check whether a result was good and safe | [`evaluation/README.md`](evaluation/README.md) |
+| See what comes next | [`docs/roadmap.md`](docs/roadmap.md) |
 
 ## How the pieces fit together
 
 A **brain** defines an agent’s role and working method. A **skill** supplies a repeatable procedure. **Guardrails** define what is forbidden or requires review. **Templates** standardize outputs. **Memory** provides bounded, expiring context. The optional **workspace bridge** synchronizes approved repository paths with Google Drive after an owner deploys and configures it.
+
+Three newer layers make agent work safer and easier to repeat. **Prompt files** save a good instruction with declared inputs and outputs. **Task, Workspace, Policy, and Model Adapter** files say what to do, what may be used, what is allowed, and which AI (or a person) does it. **Provenance-aware memory** shows where every remembered fact came from and whether it is still current. **Evaluation** records how each run went. `docs/plain-language-guide.md` explains all of them without technical terms.
 
 The system is provider-agnostic. The same instructions may be used with Gemini, Claude, OpenAI-compatible services, local models, or no model at all. A provider is never assumed to be available, free, private, or suitable for restricted data. Every integration must have a manual fallback.
 
@@ -36,27 +44,56 @@ The system is provider-agnostic. The same instructions may be used with Gemini, 
 │   ├── naming-policy.yaml
 │   ├── mcp-bridge-mapping.yaml
 │   └── repository-manifest.yaml
+├── docs/
+│   ├── no-coder-maintenance.md
+│   ├── plain-language-guide.md        # Words and steps, no jargon
+│   ├── roadmap.md                     # What is done, what is next
+│   └── configure-google-appsscript-workspace-bridge.md
 ├── brains/
 │   ├── README.md
 │   ├── research-agent.md
 │   └── doc-writer-agent.md
 ├── skills/
 │   ├── README.md
-│   ├── cpintl-org-writing-skill/       # Full skill with references, scripts, templates
+│   ├── cpintl-org-writing-skill/       # Naming, structure, technical writing
 │   ├── google-workspace-free-serverless/ # Quota-safe Workspace patterns
 │   ├── github-repository-operations/  # No-coder GitHub management
-│   └── workspace-drive-search/         # Approved Drive search contract and validator
+│   ├── workspace-drive-search/         # Approved Drive search contract and validator
+│   ├── prompt-authoring/               # Write and check .prompt files
+│   ├── memory-search/                  # Read-only memory with source and freshness
+│   └── agent-task-planning/            # Fill Task, Workspace, Policy, Model, Approval
+├── prompts/
+│   ├── README.md
+│   ├── diagnostics.md
+│   ├── schemas/                        # Rules for the prompt header
+│   └── library/                        # Example prompt, shared pieces, schemas, test cases
+├── schemas/                            # Neutral rulebooks: task, workspace, policy, model, run, lifecycle
+├── providers/
+│   ├── README.md
+│   ├── provider-catalog.yaml           # Checklist of providers (verify before use)
+│   └── adapters/                       # One small file per provider, plus a no-AI default
 ├── guardrails/
 │   ├── README.md
 │   ├── security-rules.yaml
+│   ├── adoption-boundaries.md          # What we learn from and what we never copy
 │   └── data-retention-policy.md
 ├── templates/
 │   ├── README.md
 │   ├── google-docs-outline.md
-│   └── google-sheets-schema.json
+│   ├── google-sheets-schema.json
+│   ├── agent-task.yaml                 # Plain templates: task, workspace, policy,
+│   ├── agent-workspace.yaml            #   model adapter, agent template, run status,
+│   ├── ...                             #   checkpoint policy, human approval
+│   └── agent-control-panel/            # Google Sheets tabs (CSV) and a request form outline
 ├── memory/
 │   ├── README.md
-│   └── short-term-memory-schema.json
+│   ├── provenance-and-freshness.md
+│   ├── short-term-memory-schema.json
+│   └── *.schema.json                   # memory record, search result, source, freshness
+├── evaluation/
+│   ├── README.md
+│   ├── rubrics/                        # Human review checklist
+│   └── *.schema.json                   # test case, rubric, run record
 └── workspace-bridge/
     ├── README.md
     ├── appsscript.json
@@ -82,7 +119,7 @@ The repository rejects hardcoded secrets, unsafe paths, fabricated provider IDs,
 
 ## Validation
 
-The validation workflow runs on pull requests, pushes to `main`, manual runs, and a weekly schedule. It checks skill metadata and references, the free-resource evidence matrix, YAML/JSON structure, likely secret patterns, unsafe paths, and whitespace. The workspace workflow validates the bridge mapping and skips external dispatch when secrets are not configured.
+The validation workflow runs on pull requests, pushes to `main`, manual runs, and a weekly schedule. It checks skill metadata and references, the free-resource evidence matrix, YAML/JSON structure, prompt files, agent task templates, model adapters, memory requests, likely secret patterns, unsafe paths, and whitespace. The workspace workflow validates the bridge mapping and skips external dispatch when secrets are not configured.
 
 For local checks, use:
 
@@ -90,6 +127,9 @@ For local checks, use:
 python /home/ubuntu/skills/skill-creator/scripts/quick_validate.py skills/{skill-name}
 python skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
 python skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
+python skills/prompt-authoring/scripts/validate_prompts.py prompts/library
+python skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
+python skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
 ```
 
 ## Assumptions and boundaries

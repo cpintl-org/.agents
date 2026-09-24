@@ -1,0 +1,9 @@
+{
+  "operation": "search_memory",
+  "sourceIds": ["program-policy"],
+  "query": "human review",
+  "limit": 5,
+  "sensitivityCeiling": "internal",
+  "requesterRole": "{role}",
+  "dryRun": true
+}

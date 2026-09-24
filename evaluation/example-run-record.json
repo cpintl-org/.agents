@@ -1,0 +1,16 @@
+{
+  "runId": "run-example-001",
+  "promptName": "evidence-summary",
+  "promptVersion": "1.0.0",
+  "brainVersion": "not-versioned",
+  "skillVersions": [],
+  "provider": "manual-review",
+  "model": "none",
+  "inputClassification": "internal",
+  "toolCalls": [],
+  "outputValid": true,
+  "humanApproval": "pending",
+  "usageNote": "Synthetic example. No real data.",
+  "safetyFindings": [],
+  "recordedAt": "2026-01-01T00:00:00Z"
+}

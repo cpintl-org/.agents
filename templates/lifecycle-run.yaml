@@ -1,0 +1,23 @@
+# AgentInstance: ONE run of a template. The status block is the run's progress card.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentInstance
+metadata:
+  name: evidence-run-001
+  owner: "{responsible-role}"
+spec:
+  templateRef:
+    kind: AgentTemplate
+    name: evidence-research-agent
+  taskRef:
+    kind: AgentTask
+    name: monthly-health-report
+  runtime: manual
+status:
+  phase: waiting_for_review
+  conditions:
+    - type: SourceValidated
+      status: "True"
+    - type: HumanApproval
+      status: "False"
+      reason: ReviewRequired
+      message: "Waiting for a named reviewer."
