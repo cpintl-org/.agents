@@ -1,0 +1,14 @@
+# AgentPolicy: WHAT the agent is allowed to do. Safe defaults are already filled in.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentPolicy
+metadata:
+  name: internal-human-review
+  owner: "{responsible-role}"
+  description: "Internal information only. A person must approve the result."
+spec:
+  sensitivity: internal
+  network: deny-by-default
+  humanReviewRequired: true
+  allowExternalWrite: false
+  allowAiForRestrictedData: false
+  retentionDays: 30

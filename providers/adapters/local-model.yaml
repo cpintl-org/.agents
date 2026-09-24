@@ -1,0 +1,21 @@
+apiVersion: agents.cpintl.org/v1alpha1
+kind: ModelAdapter
+metadata:
+  name: local-model-adapter
+  owner: "{responsible-role}"
+  description: "A model running on your own computer. Secure the machine and verify the model's license."
+spec:
+  provider: local
+  model: "{model-id}"
+  credentialRef: "{approved-secret-name}"
+  capabilities:
+    structuredOutput: true
+    vision: false
+    tools: true
+  limits:
+    contextTokens: "verify-at-runtime"
+    outputTokens: "verify-at-runtime"
+  verifiedOn: "{YYYY-MM-DD}"
+  extensions:
+    providerSpecific:
+      "{provider-field}": "{value}"

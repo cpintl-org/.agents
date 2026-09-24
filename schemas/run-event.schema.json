@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RunEvent: one line in a run's history",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "runId",
+    "type",
+    "timestamp"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "created",
+        "started",
+        "source_checked",
+        "tool_called",
+        "review_requested",
+        "approved",
+        "rejected",
+        "paused",
+        "resumed",
+        "failed",
+        "completed"
+      ]
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "created",
+        "preparing",
+        "ready",
+        "running",
+        "waiting_for_review",
+        "paused",
+        "suspended",
+        "completed",
+        "failed",
+        "terminated"
+      ]
+    },
+    "actorRole": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Short plain note. No personal or restricted data."
+    }
+  }
+}

@@ -36,6 +36,27 @@ rules:
   - id: provider-failure
     action: fallback
     behavior: preserve-input-and-create-manual-task
+  - id: memory-read-only-default
+    action: require
+    evidence: [registered-source, actor-role, bounded-result, revision-shown]
+    notes: "Memory operations are read-only. refresh_source is a dry run until a person approves."
+  - id: no-arbitrary-queries
+    action: deny
+    conditions: [free-form-database-query, free-form-file-path, unbounded-search, automatic-indexing, cross-project-linking]
+  - id: memory-deletion
+    action: require_human_review
+    actions: [delete-memory, overwrite-memory, merge-sources]
+  - id: provider-settings-outside-prompts
+    action: deny
+    conditions: [provider-field-in-prompt, provider-field-in-task]
+    fallback: move-to-model-adapter
+  - id: free-tier-restricted-data
+    action: deny
+    conditions: [restricted-data-to-unverified-provider, restricted-data-to-free-tier-provider]
+    fallback: manual-review-adapter
+  - id: run-approval
+    action: require_human_review
+    conditions: [result-shared-externally, result-changes-a-record, result-assigns-a-person]
 logging:
   allowedFields: [auditId, operation, status, provider, model, redactionApplied, actorRole, timestamp]
   forbiddenFields: [prompt, rawResponse, beneficiaryId, healthData, token, credential]

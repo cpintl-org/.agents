@@ -1,0 +1,2 @@
+taskId,requestedBy,objective,brain,workspaceId,policyId,modelId,outputFormat,status,createdOn
+task-001,{name-or-role},{plain-language objective},brains/doc-writer-agent.md,workspace-001,policy-001,model-001,google-docs,requested,{YYYY-MM-DD}

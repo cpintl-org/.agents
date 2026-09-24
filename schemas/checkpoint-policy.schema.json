@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CheckpointPolicy: when to save progress",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "agents.cpintl.org/v1alpha1"
+    },
+    "kind": {
+      "const": "CheckpointPolicy"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+        },
+        "owner": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "none",
+            "on-pause",
+            "every-step"
+          ]
+        },
+        "keepLast": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "containsRestrictedData": {
+          "type": "boolean"
+        },
+        "expiresAfterDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365
+        }
+      }
+    }
+  }
+}

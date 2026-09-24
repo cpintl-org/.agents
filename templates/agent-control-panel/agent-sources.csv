@@ -1,0 +1,2 @@
+sourceId,sourceType,locator,revision,freshness,sensitivity,ownerRole,lastCheckedOn,reviewEveryDays
+program-policy,repository,cpintl-org/.agents@main:guardrails,{revision-or-modified-time},unknown,internal,{owner-role},{YYYY-MM-DD},90

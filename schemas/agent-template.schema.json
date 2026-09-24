@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentTemplate: reusable logical agent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "agents.cpintl.org/v1alpha1"
+    },
+    "kind": {
+      "const": "AgentTemplate"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+        },
+        "owner": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "brain",
+        "policy"
+      ],
+      "properties": {
+        "brain": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._/-]+$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        "skills": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._/-]+$",
+            "not": {
+              "pattern": "\\.\\."
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "capability"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+              },
+              "capability": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "workspace": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sources": {
+              "type": "array",
+              "maxItems": 50,
+              "items": {
+                "type": "string",
+                "maxLength": 300
+              }
+            }
+          }
+        },
+        "policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sensitivity",
+            "humanReviewRequired"
+          ],
+          "properties": {
+            "network": {
+              "type": "string",
+              "enum": [
+                "deny-by-default",
+                "allowlist"
+              ]
+            },
+            "sensitivity": {
+              "type": "string",
+              "enum": [
+                "public",
+                "internal",
+                "restricted"
+              ]
+            },
+            "humanReviewRequired": {
+              "type": "boolean"
+            }
+          }
+        },
+        "persistence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "cold-start",
+                "checkpointed"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

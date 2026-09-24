@@ -24,3 +24,7 @@ Do not put OAuth tokens, service-account keys, beneficiary data, or private file
 ## References
 
 Read `references/bridge-contract.md` for the typed request/response contract and `scripts/validate_bridge_request.py` for network-free validation.
+
+## Related skill
+
+To recall approved facts with their source, revision, and freshness rather than only locating files, use the `memory-search` skill. It is read-only and only works on sources a person has registered.

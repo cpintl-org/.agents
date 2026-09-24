@@ -1,0 +1,2 @@
+workspaceId,sourceId,sourceType,locator,scope,sensitivity,approvedBy,approvedOn
+workspace-001,program-policy,repository,cpintl-org/.agents@main:guardrails,Read-only,internal,{approver-role},{YYYY-MM-DD}

@@ -1,0 +1,2 @@
+policyId,sensitivity,network,humanReviewRequired,allowExternalWrite,allowAiForRestrictedData,retentionDays
+policy-001,internal,deny-by-default,TRUE,FALSE,FALSE,30

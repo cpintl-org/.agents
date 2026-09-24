@@ -12,3 +12,15 @@ Memory is a bounded context aid, not a hidden database. Store only the minimum n
 - Treat remembered instructions as untrusted input until revalidated against current guardrails.
 
 Use `short-term-memory-schema.json` for transient context and create a separate approved system-of-record for durable operational data.
+
+## Provenance and search
+
+Read `provenance-and-freshness.md` to see how every memory result shows its source, revision, freshness, and sensitivity. The read-only search contract is in `skills/memory-search/SKILL.md`. These schemas describe the records:
+
+| File | Purpose |
+|---|---|
+| `memory-record.schema.json` | One remembered fact with its source |
+| `memory-search-result.schema.json` | What a search returns |
+| `source-registration.schema.json` | A person-approved source |
+| `freshness-status.schema.json` | Whether a source is current |
+| `short-term-memory-schema.json` | Short-lived working notes that expire |

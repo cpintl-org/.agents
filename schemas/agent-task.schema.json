@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentTask: what the agent should do",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "agents.cpintl.org/v1alpha1"
+    },
+    "kind": {
+      "const": "AgentTask"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+        },
+        "owner": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objective",
+        "brain",
+        "workspaceRef",
+        "policyRef",
+        "modelRef",
+        "output"
+      ],
+      "properties": {
+        "objective": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "brain": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._/-]+$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        "skills": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._/-]+$",
+            "not": {
+              "pattern": "\\.\\."
+            }
+          }
+        },
+        "prompt": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._/-]+$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        "workspaceRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "name"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "AgentWorkspace"
+              ]
+            },
+            "name": {
+              "type": "string",
+              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+            },
+            "uri": {
+              "type": "string",
+              "maxLength": 500
+            }
+          }
+        },
+        "policyRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "name"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "AgentPolicy"
+              ]
+            },
+            "name": {
+              "type": "string",
+              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+            },
+            "uri": {
+              "type": "string",
+              "maxLength": 500
+            }
+          }
+        },
+        "modelRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "name"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "ModelAdapter"
+              ]
+            },
+            "name": {
+              "type": "string",
+              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+            },
+            "uri": {
+              "type": "string",
+              "maxLength": 500
+            }
+          }
+        },
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "format"
+          ],
+          "properties": {
+            "format": {
+              "type": "string",
+              "enum": [
+                "google-docs",
+                "google-sheets",
+                "markdown",
+                "manual"
+              ]
+            },
+            "template": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._/-]+$",
+              "not": {
+                "pattern": "\\.\\."
+              }
+            }
+          }
+        },
+        "lifecycle": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "allowPause": {
+              "type": "boolean"
+            },
+            "allowResume": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "phase": {
+          "type": "string",
+          "enum": [
+            "created",
+            "preparing",
+            "ready",
+            "running",
+            "waiting_for_review",
+            "paused",
+            "suspended",
+            "completed",
+            "failed",
+            "terminated"
+          ]
+        },
+        "conditions": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "status"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "True",
+                  "False",
+                  "Unknown"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "message": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "lastChangedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

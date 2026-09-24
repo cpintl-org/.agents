@@ -1,0 +1,4079 @@
+From d1f83f8c6ec83b95a51b2cf2a7668b59267013c2 Mon Sep 17 00:00:00 2001
+From: cpintl-agents-update <bgd.cpms@cpintl.org>
+Date: Thu, 24 Sep 2026 06:36:52 +0000
+Subject: [PATCH] Add prompt, schema, provider, memory, evaluation, and
+ agent-planning layers with no-coder guides
+
+---
+ .github/workflows/skill-validation.yml        |  15 +-
+ README.md                                     |  50 +++-
+ config/repository-manifest.yaml               |   7 +
+ docs/plain-language-guide.md                  |  55 ++++
+ docs/roadmap.md                               |  25 ++
+ evaluation/README.md                          |  33 +++
+ evaluation/example-run-record.json            |  16 ++
+ evaluation/reports/README.md                  |   3 +
+ evaluation/rubric.schema.json                 |  50 ++++
+ evaluation/rubrics/human-review-rubric.yaml   |  26 ++
+ evaluation/run-record.schema.json             | 104 +++++++
+ evaluation/test-case.schema.json              |  49 ++++
+ guardrails/README.md                          |   2 +
+ guardrails/adoption-boundaries.md             |  40 +++
+ guardrails/security-rules.yaml                |  21 ++
+ memory/README.md                              |  12 +
+ memory/freshness-status.schema.json           |  42 +++
+ memory/memory-record.schema.json              | 103 +++++++
+ memory/memory-search-result.schema.json       |  97 +++++++
+ memory/provenance-and-freshness.md            |  37 +++
+ memory/source-registration.schema.json        |  69 +++++
+ prompts/README.md                             |  51 ++++
+ prompts/diagnostics.md                        |  16 ++
+ prompts/library/evidence-summary.prompt       |  24 ++
+ .../fixtures/evidence-summary.tests.yaml      |  20 ++
+ .../library/partials/evidence-rules.prompt    |   8 +
+ .../schemas/evidence-summary-input.json       |  12 +
+ .../schemas/evidence-summary-output.json      |  14 +
+ .../schemas/prompt-frontmatter.schema.json    |  70 +++++
+ providers/README.md                           |  39 +++
+ providers/adapters/anthropic-claude.yaml      |  21 ++
+ providers/adapters/google-gemini.yaml         |  21 ++
+ providers/adapters/local-model.yaml           |  21 ++
+ providers/adapters/manual-review.yaml         |  15 ++
+ providers/adapters/openai-compatible.yaml     |  21 ++
+ providers/provider-catalog.yaml               |  45 ++++
+ schemas/agent-instance.schema.json            | 191 +++++++++++++
+ schemas/agent-policy.schema.json              |  89 ++++++
+ schemas/agent-task.schema.json                | 254 ++++++++++++++++++
+ schemas/agent-template.schema.json            | 145 ++++++++++
+ schemas/agent-workspace.schema.json           | 131 +++++++++
+ schemas/checkpoint-policy.schema.json         |  71 +++++
+ schemas/human-approval.schema.json            |  62 +++++
+ schemas/lifecycle-condition.schema.json       |  37 +++
+ schemas/model-adapter.schema.json             | 107 ++++++++
+ schemas/run-event.schema.json                 |  66 +++++
+ schemas/typed-reference.schema.json           |  33 +++
+ skills/README.md                              |   9 +
+ skills/agent-task-planning/SKILL.md           |  36 +++
+ .../references/lifecycle-and-status.md        |  35 +++
+ .../scripts/validate_agent_yaml.py            |  79 ++++++
+ .../templates/task-planning-checklist.md      |  22 ++
+ skills/memory-search/SKILL.md                 |  47 ++++
+ .../references/memory-contract.md             |  42 +++
+ .../scripts/validate_memory_request.py        |  64 +++++
+ .../templates/memory-search-request.json      |   9 +
+ .../source-registration-example.json          |  11 +
+ skills/prompt-authoring/SKILL.md              |  36 +++
+ .../references/prompt-format.md               |  47 ++++
+ .../scripts/validate_prompts.py               | 224 +++++++++++++++
+ .../templates/prompt-template.prompt          |  14 +
+ skills/workspace-drive-search/SKILL.md        |   4 +
+ templates/README.md                           |  16 ++
+ templates/agent-control-panel/README.md       |  37 +++
+ .../agent-control-panel/agent-approvals.csv   |   2 +
+ .../agent-control-panel/agent-policies.csv    |   2 +
+ templates/agent-control-panel/agent-runs.csv  |   2 +
+ .../agent-control-panel/agent-sources.csv     |   2 +
+ templates/agent-control-panel/agent-tasks.csv |   2 +
+ .../agent-control-panel/agent-workspaces.csv  |   2 +
+ .../intake-form-questions.md                  |  11 +
+ templates/agent-policy.yaml                   |  14 +
+ templates/agent-task.yaml                     |  37 +++
+ templates/agent-template.yaml                 |  23 ++
+ templates/agent-workspace.yaml                |  23 ++
+ templates/checkpoint-policy.yaml              |  10 +
+ templates/human-approval.yaml                 |  12 +
+ templates/lifecycle-run.yaml                  |  23 ++
+ templates/model-adapter.yaml                  |  20 ++
+ 79 files changed, 3351 insertions(+), 6 deletions(-)
+ create mode 100644 docs/plain-language-guide.md
+ create mode 100644 docs/roadmap.md
+ create mode 100644 evaluation/README.md
+ create mode 100644 evaluation/example-run-record.json
+ create mode 100644 evaluation/reports/README.md
+ create mode 100644 evaluation/rubric.schema.json
+ create mode 100644 evaluation/rubrics/human-review-rubric.yaml
+ create mode 100644 evaluation/run-record.schema.json
+ create mode 100644 evaluation/test-case.schema.json
+ create mode 100644 guardrails/adoption-boundaries.md
+ create mode 100644 memory/freshness-status.schema.json
+ create mode 100644 memory/memory-record.schema.json
+ create mode 100644 memory/memory-search-result.schema.json
+ create mode 100644 memory/provenance-and-freshness.md
+ create mode 100644 memory/source-registration.schema.json
+ create mode 100644 prompts/README.md
+ create mode 100644 prompts/diagnostics.md
+ create mode 100644 prompts/library/evidence-summary.prompt
+ create mode 100644 prompts/library/fixtures/evidence-summary.tests.yaml
+ create mode 100644 prompts/library/partials/evidence-rules.prompt
+ create mode 100644 prompts/library/schemas/evidence-summary-input.json
+ create mode 100644 prompts/library/schemas/evidence-summary-output.json
+ create mode 100644 prompts/schemas/prompt-frontmatter.schema.json
+ create mode 100644 providers/README.md
+ create mode 100644 providers/adapters/anthropic-claude.yaml
+ create mode 100644 providers/adapters/google-gemini.yaml
+ create mode 100644 providers/adapters/local-model.yaml
+ create mode 100644 providers/adapters/manual-review.yaml
+ create mode 100644 providers/adapters/openai-compatible.yaml
+ create mode 100644 providers/provider-catalog.yaml
+ create mode 100644 schemas/agent-instance.schema.json
+ create mode 100644 schemas/agent-policy.schema.json
+ create mode 100644 schemas/agent-task.schema.json
+ create mode 100644 schemas/agent-template.schema.json
+ create mode 100644 schemas/agent-workspace.schema.json
+ create mode 100644 schemas/checkpoint-policy.schema.json
+ create mode 100644 schemas/human-approval.schema.json
+ create mode 100644 schemas/lifecycle-condition.schema.json
+ create mode 100644 schemas/model-adapter.schema.json
+ create mode 100644 schemas/run-event.schema.json
+ create mode 100644 schemas/typed-reference.schema.json
+ create mode 100644 skills/agent-task-planning/SKILL.md
+ create mode 100644 skills/agent-task-planning/references/lifecycle-and-status.md
+ create mode 100644 skills/agent-task-planning/scripts/validate_agent_yaml.py
+ create mode 100644 skills/agent-task-planning/templates/task-planning-checklist.md
+ create mode 100644 skills/memory-search/SKILL.md
+ create mode 100644 skills/memory-search/references/memory-contract.md
+ create mode 100644 skills/memory-search/scripts/validate_memory_request.py
+ create mode 100644 skills/memory-search/templates/memory-search-request.json
+ create mode 100644 skills/memory-search/templates/source-registration-example.json
+ create mode 100644 skills/prompt-authoring/SKILL.md
+ create mode 100644 skills/prompt-authoring/references/prompt-format.md
+ create mode 100644 skills/prompt-authoring/scripts/validate_prompts.py
+ create mode 100644 skills/prompt-authoring/templates/prompt-template.prompt
+ create mode 100644 templates/agent-control-panel/README.md
+ create mode 100644 templates/agent-control-panel/agent-approvals.csv
+ create mode 100644 templates/agent-control-panel/agent-policies.csv
+ create mode 100644 templates/agent-control-panel/agent-runs.csv
+ create mode 100644 templates/agent-control-panel/agent-sources.csv
+ create mode 100644 templates/agent-control-panel/agent-tasks.csv
+ create mode 100644 templates/agent-control-panel/agent-workspaces.csv
+ create mode 100644 templates/agent-control-panel/intake-form-questions.md
+ create mode 100644 templates/agent-policy.yaml
+ create mode 100644 templates/agent-task.yaml
+ create mode 100644 templates/agent-template.yaml
+ create mode 100644 templates/agent-workspace.yaml
+ create mode 100644 templates/checkpoint-policy.yaml
+ create mode 100644 templates/human-approval.yaml
+ create mode 100644 templates/lifecycle-run.yaml
+ create mode 100644 templates/model-adapter.yaml
+
+diff --git a/.github/workflows/skill-validation.yml b/.github/workflows/skill-validation.yml
+index 0cd79dc..e7bac83 100644
+--- a/.github/workflows/skill-validation.yml
++++ b/.github/workflows/skill-validation.yml
+@@ -31,7 +31,7 @@ jobs:
+           python-version: '3.12'
+ 
+       - name: Install validation dependency
+-        run: python -m pip install --disable-pip-version-check PyYAML
++        run: python -m pip install --disable-pip-version-check PyYAML jsonschema
+ 
+       - name: Validate skill metadata and references
+         shell: bash
+@@ -80,6 +80,19 @@ jobs:
+           print('all YAML and JSON files parsed successfully')
+           PY
+ 
++      - name: Validate prompts, agent templates, and memory requests
++        run: |
++          python skills/prompt-authoring/scripts/validate_prompts.py prompts/library
++          python skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
++          python skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
++          python - <<'PY'
++          import json, pathlib, jsonschema
++          for folder in ('schemas', 'memory', 'evaluation', 'prompts/schemas'):
++              for path in sorted(pathlib.Path(folder).glob('*.schema.json')):
++                  jsonschema.Draft202012Validator.check_schema(json.loads(path.read_text(encoding='utf-8')))
++          print('all JSON schemas are valid')
++          PY
++
+       - name: Check for secrets and unsafe paths
+         shell: bash
+         run: |
+diff --git a/README.md b/README.md
+index e03f4f7..1308fb8 100644
+--- a/README.md
++++ b/README.md
+@@ -15,11 +15,19 @@
+ | Configure GitHub-to-Workspace mapping | [`config/mcp-bridge-mapping.yaml`](config/mcp-bridge-mapping.yaml) |
+ | Deploy the optional bridge | [`workspace-bridge/README.md`](workspace-bridge/README.md) |
+ | Manage GitHub without coding | [`skills/github-repository-operations/SKILL.md`](skills/github-repository-operations/SKILL.md) |
++| Understand the agent layers in plain words | [`docs/plain-language-guide.md`](docs/plain-language-guide.md) |
++| Plan an agent task (Google Sheets, no coding) | [`templates/agent-control-panel/README.md`](templates/agent-control-panel/README.md) |
++| Save a reusable prompt | [`prompts/README.md`](prompts/README.md) |
++| Choose or switch an AI provider | [`providers/README.md`](providers/README.md) |
++| Check whether a result was good and safe | [`evaluation/README.md`](evaluation/README.md) |
++| See what comes next | [`docs/roadmap.md`](docs/roadmap.md) |
+ 
+ ## How the pieces fit together
+ 
+ A **brain** defines an agent’s role and working method. A **skill** supplies a repeatable procedure. **Guardrails** define what is forbidden or requires review. **Templates** standardize outputs. **Memory** provides bounded, expiring context. The optional **workspace bridge** synchronizes approved repository paths with Google Drive after an owner deploys and configures it.
+ 
++Three newer layers make agent work safer and easier to repeat. **Prompt files** save a good instruction with declared inputs and outputs. **Task, Workspace, Policy, and Model Adapter** files say what to do, what may be used, what is allowed, and which AI (or a person) does it. **Provenance-aware memory** shows where every remembered fact came from and whether it is still current. **Evaluation** records how each run went. `docs/plain-language-guide.md` explains all of them without technical terms.
++
+ The system is provider-agnostic. The same instructions may be used with Gemini, Claude, OpenAI-compatible services, local models, or no model at all. A provider is never assumed to be available, free, private, or suitable for restricted data. Every integration must have a manual fallback.
+ 
+ ## Repository tree
+@@ -36,27 +44,56 @@ The system is provider-agnostic. The same instructions may be used with Gemini,
+ │   ├── naming-policy.yaml
+ │   ├── mcp-bridge-mapping.yaml
+ │   └── repository-manifest.yaml
++├── docs/
++│   ├── no-coder-maintenance.md
++│   ├── plain-language-guide.md        # Words and steps, no jargon
++│   ├── roadmap.md                     # What is done, what is next
++│   └── configure-google-appsscript-workspace-bridge.md
+ ├── brains/
+ │   ├── README.md
+ │   ├── research-agent.md
+ │   └── doc-writer-agent.md
+ ├── skills/
+ │   ├── README.md
+-│   ├── cpintl-org-writing-skill/       # Full skill with references, scripts, templates
++│   ├── cpintl-org-writing-skill/       # Naming, structure, technical writing
+ │   ├── google-workspace-free-serverless/ # Quota-safe Workspace patterns
+ │   ├── github-repository-operations/  # No-coder GitHub management
+-│   └── workspace-drive-search/         # Approved Drive search contract and validator
++│   ├── workspace-drive-search/         # Approved Drive search contract and validator
++│   ├── prompt-authoring/               # Write and check .prompt files
++│   ├── memory-search/                  # Read-only memory with source and freshness
++│   └── agent-task-planning/            # Fill Task, Workspace, Policy, Model, Approval
++├── prompts/
++│   ├── README.md
++│   ├── diagnostics.md
++│   ├── schemas/                        # Rules for the prompt header
++│   └── library/                        # Example prompt, shared pieces, schemas, test cases
++├── schemas/                            # Neutral rulebooks: task, workspace, policy, model, run, lifecycle
++├── providers/
++│   ├── README.md
++│   ├── provider-catalog.yaml           # Checklist of providers (verify before use)
++│   └── adapters/                       # One small file per provider, plus a no-AI default
+ ├── guardrails/
+ │   ├── README.md
+ │   ├── security-rules.yaml
++│   ├── adoption-boundaries.md          # What we learn from and what we never copy
+ │   └── data-retention-policy.md
+ ├── templates/
+ │   ├── README.md
+ │   ├── google-docs-outline.md
+-│   └── google-sheets-schema.json
++│   ├── google-sheets-schema.json
++│   ├── agent-task.yaml                 # Plain templates: task, workspace, policy,
++│   ├── agent-workspace.yaml            #   model adapter, agent template, run status,
++│   ├── ...                             #   checkpoint policy, human approval
++│   └── agent-control-panel/            # Google Sheets tabs (CSV) and a request form outline
+ ├── memory/
+ │   ├── README.md
+-│   └── short-term-memory-schema.json
++│   ├── provenance-and-freshness.md
++│   ├── short-term-memory-schema.json
++│   └── *.schema.json                   # memory record, search result, source, freshness
++├── evaluation/
++│   ├── README.md
++│   ├── rubrics/                        # Human review checklist
++│   └── *.schema.json                   # test case, rubric, run record
+ └── workspace-bridge/
+     ├── README.md
+     ├── appsscript.json
+@@ -82,7 +119,7 @@ The repository rejects hardcoded secrets, unsafe paths, fabricated provider IDs,
+ 
+ ## Validation
+ 
+-The validation workflow runs on pull requests, pushes to `main`, manual runs, and a weekly schedule. It checks skill metadata and references, the free-resource evidence matrix, YAML/JSON structure, likely secret patterns, unsafe paths, and whitespace. The workspace workflow validates the bridge mapping and skips external dispatch when secrets are not configured.
++The validation workflow runs on pull requests, pushes to `main`, manual runs, and a weekly schedule. It checks skill metadata and references, the free-resource evidence matrix, YAML/JSON structure, prompt files, agent task templates, model adapters, memory requests, likely secret patterns, unsafe paths, and whitespace. The workspace workflow validates the bridge mapping and skips external dispatch when secrets are not configured.
+ 
+ For local checks, use:
+ 
+@@ -90,6 +127,9 @@ For local checks, use:
+ python /home/ubuntu/skills/skill-creator/scripts/quick_validate.py skills/{skill-name}
+ python skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
+ python skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
++python skills/prompt-authoring/scripts/validate_prompts.py prompts/library
++python skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
++python skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
+ ```
+ 
+ ## Assumptions and boundaries
+diff --git a/config/repository-manifest.yaml b/config/repository-manifest.yaml
+index 9d2e6a9..99fc5e5 100644
+--- a/config/repository-manifest.yaml
++++ b/config/repository-manifest.yaml
+@@ -10,6 +10,11 @@ components:
+   guardrails: guardrails
+   templates: templates
+   memory: memory
++  prompts: prompts
++  schemas: schemas
++  providers: providers
++  evaluation: evaluation
++  docs: docs
+   workspaceBridge: workspace-bridge
+   configuration: config
+ validation:
+@@ -18,6 +23,8 @@ validation:
+   requiredChecks: [Validate skill packages]
+   secretScanning: true
+   schemaValidation: true
++  promptValidation: true
++  agentTemplateValidation: true
+ providerPolicy:
+   modelAgnostic: true
+   noProviderRequired: true
+diff --git a/docs/plain-language-guide.md b/docs/plain-language-guide.md
+new file mode 100644
+index 0000000..d8ad223
+--- /dev/null
++++ b/docs/plain-language-guide.md
+@@ -0,0 +1,55 @@
++# Plain-language guide to the agent layers
++
++This guide explains the new parts of `.agents` without technical terms. You do not need to install anything to read it or to use the Google Sheets control panel.
++
++## The big picture in one paragraph
++
++To ask an AI to do useful work safely, we write down five things: **what** we want done (Task), **which sources and tools** it may use (Workspace), **what it is allowed to do** (Policy), **which AI, if any** (Model Adapter), and **who says yes** (Human Approval). We also save good instructions as **prompt files**, remember approved facts with their **source and freshness**, and record **how each run went**. Every piece can be edited in Google Sheets, Google Docs, or the GitHub website.
++
++## Words you will see
++
++| Word | Plain meaning | Where it lives |
++|---|---|---|
++| Brain | A role description for an agent, such as "careful researcher" | `brains` |
++| Skill | A saved procedure an agent can follow | `skills` |
++| Prompt file | A saved, versioned instruction with declared inputs and outputs | `prompts` |
++| Task | What we want done, in plain words | `templates/agent-task.yaml` or the AgentTasks tab |
++| Workspace | The approved sources and tools for one task | `templates/agent-workspace.yaml` or the AgentWorkspaces tab |
++| Policy | Rules: privacy level, network access, review | `templates/agent-policy.yaml` or the AgentPolicies tab |
++| Model adapter | The one file that names the AI provider and model | `providers` |
++| Run | One attempt at a task, with a progress status | `templates/lifecycle-run.yaml` or the AgentRuns tab |
++| Approval | A named person's yes or no | `templates/human-approval.yaml` or the AgentApprovals tab |
++| Provenance | Where a fact came from, and which version | `memory` |
++| Freshness | Whether a source is still current | `memory` |
++| Schema | A rulebook for how a file must look | `schemas`, `memory`, `evaluation` |
++| Evaluation | Checking whether the result was good and safe | `evaluation` |
++| Adapter | A small file that translates between our neutral format and one provider | `providers/adapters` |
++
++## What to do first (in this order)
++
++1. **Read the safety rules.** Open `guardrails/README.md` and `guardrails/adoption-boundaries.md`. Anything about people, patients, or safeguarding is `restricted` and handled by a person.
++2. **Make the control panel.** Follow `templates/agent-control-panel/README.md` to create the six-tab Google Sheet.
++3. **Fill one small task.** Pick a low-risk internal task, such as summarizing a public policy document. Use `manual-review` as the model so no AI is involved at first.
++4. **Get a person to approve it.** Record the decision in the AgentApprovals tab.
++5. **Try one prompt file.** Follow `prompts/README.md` to copy the example prompt.
++6. **Try one approved source.** Register one folder, not a whole Drive (see `memory/provenance-and-freshness.md`).
++7. **Only then choose a provider.** Use `providers/README.md`, verify the provider's current official terms, and never use a free tier for restricted data.
++
++## How the parts connect
++
++```text
++Request (Google Form) -> AgentTasks tab -> person checks ->
++Workspace + Policy + Model adapter chosen -> run -> "waiting for review" ->
++person approves -> result delivered -> run record saved
++```
++
++## If something goes wrong
++
++- The checker shows a message: read `prompts/diagnostics.md`.
++- A source looks out of date: mark it `stale` and ask its owner.
++- The AI or a connection is unavailable: switch the task's model to `manual-review` and do it by hand.
++- Unsure whether something is safe: stop and ask the responsible person. It is always fine to pause.
++
++## Where commands run (only if you choose to use them)
++
++Every command in this repository says where to run it. Unless it says otherwise, open a terminal in the folder that contains the repository (the folder that holds `README.md`), then type or paste the command. You never need a command to use the Sheets control panel or to edit files on the GitHub website.
+diff --git a/docs/roadmap.md b/docs/roadmap.md
+new file mode 100644
+index 0000000..24f5c95
+--- /dev/null
++++ b/docs/roadmap.md
+@@ -0,0 +1,25 @@
++# Roadmap for the agent layers
++
++Status values: **done** (files exist and pass the automatic checks), **pilot next** (do by hand, small), **later** (do not start yet).
++
++| Step | What | Status |
++|---|---|---|
++| 1 | Neutral rulebooks for tasks, workspaces, policies, model adapters, instances, and lifecycle conditions (`schemas`) | done |
++| 2 | Prompt file convention with schemas, synthetic test cases, and a plain-language checker (`prompts`, `skills/prompt-authoring`) | done |
++| 3 | Read-only memory with source, revision, and freshness (`memory`, `skills/memory-search`) | done (contract only; no automatic indexing) |
++| 4 | Plain templates and a six-tab Google Sheets control panel (`templates`) | done |
++| 5 | Provider catalog and model adapter files (`providers`) | done (facts to verify before use) |
++| 6 | Evaluation records, rubric, and replay notes (`evaluation`) | done (manual routine) |
++| 7 | Pilot: one low-risk task, one approved Drive folder, `manual-review` first, then one approved provider | pilot next |
++| 8 | Pausing, saving progress, capacity management, or an automatic control system | later |
++
++## Pilot success measures
++
++- A non-coder can fill in a task and get it approved without help.
++- The result lists sources and marks gaps as `UNKNOWN`.
++- A reviewer finds no invented facts and no sensitive data.
++- The task can be done again with a different provider by changing only the model adapter.
++
++## Decide before step 8
++
++Step 8 needs a real runtime (a place where agents actually run) and a person who maintains it. Decide who that person is, what it costs, and how it is recovered if it fails. Until then, the manual route is the supported route.
+diff --git a/evaluation/README.md b/evaluation/README.md
+new file mode 100644
+index 0000000..51ecfa9
+--- /dev/null
++++ b/evaluation/README.md
+@@ -0,0 +1,33 @@
++# Evaluation and replay
++
++Evaluation answers two questions: **did the prompt and AI do what we asked?** and **could someone repeat the run and get a comparable result?** It is simple record-keeping, not software you need to install.
++
++## What is here
++
++| Item | Purpose |
++|---|---|
++| `test-case.schema.json` | Shape of a test case (synthetic data only) |
++| `rubric.schema.json` | Shape of a human review checklist |
++| `run-record.schema.json` | Shape of a record of one run |
++| `rubrics/human-review-rubric.yaml` | A ready rubric for reviewers |
++| `example-run-record.json` | A filled example |
++| `reports/` | Where short summaries (no restricted content) can be kept |
++
++## What a run record captures
++
++Prompt name and version, brain and skill versions, provider and model, how sensitive the input was, which tools were called, whether the output matched its expected shape, the human decision, time taken, a short usage note, safety findings, and a 1-5 factuality score.
++
++## What is never stored here
++
++Raw prompts or outputs that contain restricted or personal information, patient or case details, secrets, or tokens. Keep those outside the repository under the approved program policy. A run record stores the *classification* of the input, not the input.
++
++## Simple routine
++
++1. Run the prompt against its synthetic test cases.
++2. A reviewer fills in the rubric (yes/no or 1-5 for each question).
++3. Save one run record per run.
++4. If any blocking question is answered "no", do not use the prompt until it is fixed and its version number is raised.
++
++## Reproducibility note
++
++AI results can differ each time. Record the prompt version and provider/model so a person can see what changed when results differ.
+diff --git a/evaluation/example-run-record.json b/evaluation/example-run-record.json
+new file mode 100644
+index 0000000..bd8dd9d
+--- /dev/null
++++ b/evaluation/example-run-record.json
+@@ -0,0 +1,16 @@
++{
++  "runId": "run-example-001",
++  "promptName": "evidence-summary",
++  "promptVersion": "1.0.0",
++  "brainVersion": "not-versioned",
++  "skillVersions": [],
++  "provider": "manual-review",
++  "model": "none",
++  "inputClassification": "internal",
++  "toolCalls": [],
++  "outputValid": true,
++  "humanApproval": "pending",
++  "usageNote": "Synthetic example. No real data.",
++  "safetyFindings": [],
++  "recordedAt": "2026-01-01T00:00:00Z"
++}
+diff --git a/evaluation/reports/README.md b/evaluation/reports/README.md
+new file mode 100644
+index 0000000..722c91f
+--- /dev/null
++++ b/evaluation/reports/README.md
+@@ -0,0 +1,3 @@
++# Evaluation reports
++
++Save short, plain summaries here (one page per review). Include the prompt name and version, the date, the reviewer role, the result, and what changed. Do not include raw prompts, raw outputs with restricted content, personal data, or secrets.
+diff --git a/evaluation/rubric.schema.json b/evaluation/rubric.schema.json
+new file mode 100644
+index 0000000..129b55e
+--- /dev/null
++++ b/evaluation/rubric.schema.json
+@@ -0,0 +1,50 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "Human review rubric",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "rubricId",
++    "criteria"
++  ],
++  "properties": {
++    "rubricId": {
++      "type": "string",
++      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++    },
++    "criteria": {
++      "type": "array",
++      "minItems": 1,
++      "maxItems": 20,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "required": [
++          "id",
++          "question",
++          "scale"
++        ],
++        "properties": {
++          "id": {
++            "type": "string",
++            "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++          },
++          "question": {
++            "type": "string",
++            "maxLength": 300
++          },
++          "scale": {
++            "type": "string",
++            "enum": [
++              "yes_no",
++              "one_to_five"
++            ]
++          },
++          "blocking": {
++            "type": "boolean"
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/evaluation/rubrics/human-review-rubric.yaml b/evaluation/rubrics/human-review-rubric.yaml
+new file mode 100644
+index 0000000..9fd5d24
+--- /dev/null
++++ b/evaluation/rubrics/human-review-rubric.yaml
+@@ -0,0 +1,26 @@
++rubricId: human-review-basic
++criteria:
++  - id: sources-listed
++    question: "Is every important claim tied to a named approved source?"
++    scale: yes_no
++    blocking: true
++  - id: no-invented-facts
++    question: "Are there any facts, numbers, or sources that cannot be found in the approved sources?"
++    scale: yes_no
++    blocking: true
++  - id: sensitive-data
++    question: "Does the output contain personal, patient, safeguarding, or credential information?"
++    scale: yes_no
++    blocking: true
++  - id: unknowns-marked
++    question: "Are gaps marked as UNKNOWN instead of guessed?"
++    scale: yes_no
++    blocking: false
++  - id: clarity
++    question: "How clear is the writing for the intended reader?"
++    scale: one_to_five
++    blocking: false
++  - id: factual-accuracy
++    question: "Overall factual accuracy after checking against sources."
++    scale: one_to_five
++    blocking: false
+diff --git a/evaluation/run-record.schema.json b/evaluation/run-record.schema.json
+new file mode 100644
+index 0000000..10c3fbc
+--- /dev/null
++++ b/evaluation/run-record.schema.json
+@@ -0,0 +1,104 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "Evaluation run record (no raw restricted content)",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "runId",
++    "promptName",
++    "promptVersion",
++    "provider",
++    "model",
++    "inputClassification",
++    "outputValid",
++    "humanApproval",
++    "recordedAt"
++  ],
++  "properties": {
++    "runId": {
++      "type": "string",
++      "pattern": "^[A-Za-z0-9._-]{1,128}$"
++    },
++    "promptName": {
++      "type": "string",
++      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++    },
++    "promptVersion": {
++      "type": "string",
++      "maxLength": 32
++    },
++    "brainVersion": {
++      "type": "string",
++      "maxLength": 64
++    },
++    "skillVersions": {
++      "type": "array",
++      "maxItems": 20,
++      "items": {
++        "type": "string",
++        "maxLength": 64
++      }
++    },
++    "provider": {
++      "type": "string",
++      "maxLength": 64
++    },
++    "model": {
++      "type": "string",
++      "maxLength": 128
++    },
++    "inputClassification": {
++      "type": "string",
++      "enum": [
++        "public",
++        "internal",
++        "restricted"
++      ]
++    },
++    "toolCalls": {
++      "type": "array",
++      "maxItems": 50,
++      "items": {
++        "type": "string",
++        "maxLength": 100
++      }
++    },
++    "outputValid": {
++      "type": "boolean"
++    },
++    "humanApproval": {
++      "type": "string",
++      "enum": [
++        "not_required",
++        "pending",
++        "approved",
++        "rejected"
++      ]
++    },
++    "latencyMs": {
++      "type": "integer",
++      "minimum": 0
++    },
++    "usageNote": {
++      "type": "string",
++      "maxLength": 300
++    },
++    "safetyFindings": {
++      "type": "array",
++      "maxItems": 20,
++      "items": {
++        "type": "string",
++        "maxLength": 300
++      }
++    },
++    "factualityScore": {
++      "type": "integer",
++      "minimum": 1,
++      "maximum": 5
++    },
++    "recordedAt": {
++      "type": "string",
++      "format": "date-time"
++    }
++  }
++}
+diff --git a/evaluation/test-case.schema.json b/evaluation/test-case.schema.json
+new file mode 100644
+index 0000000..973a766
+--- /dev/null
++++ b/evaluation/test-case.schema.json
+@@ -0,0 +1,49 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "Evaluation test case (synthetic data only)",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "caseId",
++    "promptName",
++    "input",
++    "expect"
++  ],
++  "properties": {
++    "caseId": {
++      "type": "string",
++      "pattern": "^[A-Za-z0-9._-]{1,128}$"
++    },
++    "promptName": {
++      "type": "string",
++      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++    },
++    "synthetic": {
++      "const": true
++    },
++    "input": {
++      "type": "object"
++    },
++    "expect": {
++      "type": "object",
++      "additionalProperties": false,
++      "properties": {
++        "mustInclude": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        },
++        "mustNotInclude": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        },
++        "outputMustValidate": {
++          "type": "boolean"
++        }
++      }
++    }
++  }
++}
+diff --git a/guardrails/README.md b/guardrails/README.md
+index cfa3212..cc1d754 100644
+--- a/guardrails/README.md
++++ b/guardrails/README.md
+@@ -7,3 +7,5 @@ Guardrails define what an agent may do, must not do, and must escalate. They app
+ Read `security-rules.yaml` before any external integration. Read `data-retention-policy.md` before storing prompts, outputs, logs, or Workspace metadata. Treat `restricted` data as human-review only unless an approved policy explicitly permits a bounded operation.
+ 
+ Guardrails do not grant authorization. The connector, GitHub permission, Workspace role, or provider policy remains authoritative. When rules conflict, choose the stricter rule and create a human-review task.
++
++Read `adoption-boundaries.md` before copying anything from an outside project. It lists the ideas we adopt and the infrastructure and vendor assumptions we deliberately leave out.
+diff --git a/guardrails/adoption-boundaries.md b/guardrails/adoption-boundaries.md
+new file mode 100644
+index 0000000..9cf4b58
+--- /dev/null
++++ b/guardrails/adoption-boundaries.md
+@@ -0,0 +1,40 @@
++# Adoption boundaries: what we learn from, and what we do not copy
++
++We borrow **ideas** from open projects (versioned prompts, provenance-aware memory, agent lifecycle, declarative tasks) and turn them into small neutral files. We do not copy their infrastructure or vendor assumptions.
++
++## Ideas we adopt
++
++| Idea | Where it appears here |
++|---|---|
++| Versioned prompt files with declared inputs and outputs | `prompts` |
++| Provenance, revision, and freshness on every memory result | `memory` |
++| Separating the logical agent from where it runs | `schemas/agent-template.schema.json`, `schemas/agent-instance.schema.json` |
++| Task, workspace, policy, and model kept apart | `templates`, `providers` |
++| Status conditions such as "HumanApproval: False" | `skills/agent-task-planning` |
++
++## Things we do not copy into the core
++
++- Cluster or server management, and database or cache operations.
++- Any single cloud's identity, storage, or setup as a requirement.
++- Model settings from one provider inside prompts or tasks.
++- Unrestricted network access, or web addresses supplied while running.
++- Broad command-line, process-debugging, or shell powers for agents.
++- Unrestricted access to files or source code.
++- Automatic indexing of all Drive or repository files.
++- Free-form database or graph queries.
++- Deleting memory without review.
++- Automatic linking of memory between projects.
++- Unreviewed upstream branding or governance.
++
++## How optional runtimes fit
++
++Core files in this repository stay neutral. If a team later chooses a runtime (a Google Workspace script, a local tool, or something bigger), it is added as an **adapter** that reads these files. The core never depends on the adapter.
++
++```text
++cpintl-org core files  ->  optional adapters  ->  Google Workspace, a local machine,
++                                                  any AI provider, or a person by hand
++```
++
++## When in doubt
++
++Use the stricter rule and ask a person. A plan that cannot be checked by a person is not ready.
+diff --git a/guardrails/security-rules.yaml b/guardrails/security-rules.yaml
+index 695cb6c..1aa605a 100644
+--- a/guardrails/security-rules.yaml
++++ b/guardrails/security-rules.yaml
+@@ -36,6 +36,27 @@ rules:
+   - id: provider-failure
+     action: fallback
+     behavior: preserve-input-and-create-manual-task
++  - id: memory-read-only-default
++    action: require
++    evidence: [registered-source, actor-role, bounded-result, revision-shown]
++    notes: "Memory operations are read-only. refresh_source is a dry run until a person approves."
++  - id: no-arbitrary-queries
++    action: deny
++    conditions: [free-form-database-query, free-form-file-path, unbounded-search, automatic-indexing, cross-project-linking]
++  - id: memory-deletion
++    action: require_human_review
++    actions: [delete-memory, overwrite-memory, merge-sources]
++  - id: provider-settings-outside-prompts
++    action: deny
++    conditions: [provider-field-in-prompt, provider-field-in-task]
++    fallback: move-to-model-adapter
++  - id: free-tier-restricted-data
++    action: deny
++    conditions: [restricted-data-to-unverified-provider, restricted-data-to-free-tier-provider]
++    fallback: manual-review-adapter
++  - id: run-approval
++    action: require_human_review
++    conditions: [result-shared-externally, result-changes-a-record, result-assigns-a-person]
+ logging:
+   allowedFields: [auditId, operation, status, provider, model, redactionApplied, actorRole, timestamp]
+   forbiddenFields: [prompt, rawResponse, beneficiaryId, healthData, token, credential]
+diff --git a/memory/README.md b/memory/README.md
+index 0e693e1..b7abe75 100644
+--- a/memory/README.md
++++ b/memory/README.md
+@@ -12,3 +12,15 @@ Memory is a bounded context aid, not a hidden database. Store only the minimum n
+ - Treat remembered instructions as untrusted input until revalidated against current guardrails.
+ 
+ Use `short-term-memory-schema.json` for transient context and create a separate approved system-of-record for durable operational data.
++
++## Provenance and search
++
++Read `provenance-and-freshness.md` to see how every memory result shows its source, revision, freshness, and sensitivity. The read-only search contract is in `skills/memory-search/SKILL.md`. These schemas describe the records:
++
++| File | Purpose |
++|---|---|
++| `memory-record.schema.json` | One remembered fact with its source |
++| `memory-search-result.schema.json` | What a search returns |
++| `source-registration.schema.json` | A person-approved source |
++| `freshness-status.schema.json` | Whether a source is current |
++| `short-term-memory-schema.json` | Short-lived working notes that expire |
+diff --git a/memory/freshness-status.schema.json b/memory/freshness-status.schema.json
+new file mode 100644
+index 0000000..38157be
+--- /dev/null
++++ b/memory/freshness-status.schema.json
+@@ -0,0 +1,42 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "Freshness status of a registered source",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "sourceId",
++    "freshness",
++    "checkedAt"
++  ],
++  "properties": {
++    "sourceId": {
++      "type": "string",
++      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++    },
++    "freshness": {
++      "type": "string",
++      "enum": [
++        "current",
++        "stale",
++        "unknown",
++        "source_missing"
++      ]
++    },
++    "lastKnownRevision": {
++      "type": "string",
++      "maxLength": 128
++    },
++    "currentRevision": {
++      "type": "string",
++      "maxLength": 128
++    },
++    "checkedAt": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "note": {
++      "type": "string",
++      "maxLength": 300
++    }
++  }
++}
+diff --git a/memory/memory-record.schema.json b/memory/memory-record.schema.json
+new file mode 100644
+index 0000000..4a1f3b1
+--- /dev/null
++++ b/memory/memory-record.schema.json
+@@ -0,0 +1,103 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "Memory record (with provenance)",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "memoryId",
++    "summary",
++    "source",
++    "sensitivity",
++    "freshness",
++    "humanReview",
++    "createdAt"
++  ],
++  "properties": {
++    "memoryId": {
++      "type": "string",
++      "pattern": "^[A-Za-z0-9._-]{1,128}$"
++    },
++    "summary": {
++      "type": "string",
++      "minLength": 1,
++      "maxLength": 2000
++    },
++    "source": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "type",
++        "uri",
++        "revision"
++      ],
++      "properties": {
++        "type": {
++          "type": "string",
++          "enum": [
++            "repository",
++            "google_drive",
++            "google_sheet",
++            "url",
++            "manual"
++          ]
++        },
++        "uri": {
++          "type": "string",
++          "maxLength": 500
++        },
++        "repositoryPath": {
++          "type": "string",
++          "pattern": "^[A-Za-z0-9._/-]+$",
++          "not": {
++            "pattern": "\\.\\."
++          }
++        },
++        "revision": {
++          "type": "string",
++          "maxLength": 128
++        }
++      }
++    },
++    "confidence": {
++      "type": "string",
++      "enum": [
++        "draft",
++        "reviewed",
++        "approved"
++      ]
++    },
++    "freshness": {
++      "type": "string",
++      "enum": [
++        "current",
++        "stale",
++        "unknown",
++        "source_missing"
++      ]
++    },
++    "sensitivity": {
++      "type": "string",
++      "enum": [
++        "public",
++        "internal",
++        "restricted"
++      ]
++    },
++    "humanReview": {
++      "type": "string",
++      "enum": [
++        "not_required",
++        "required",
++        "approved"
++      ]
++    },
++    "createdAt": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "expiresAt": {
++      "type": "string",
++      "format": "date-time"
++    }
++  }
++}
+diff --git a/memory/memory-search-result.schema.json b/memory/memory-search-result.schema.json
+new file mode 100644
+index 0000000..bd26fd4
+--- /dev/null
++++ b/memory/memory-search-result.schema.json
+@@ -0,0 +1,97 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "Memory search result",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "status",
++    "results",
++    "redactionApplied"
++  ],
++  "properties": {
++    "status": {
++      "type": "string",
++      "enum": [
++        "ok",
++        "manual_review",
++        "denied",
++        "error"
++      ]
++    },
++    "results": {
++      "type": "array",
++      "maxItems": 20,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "required": [
++          "memoryId",
++          "excerpt",
++          "source",
++          "freshness"
++        ],
++        "properties": {
++          "memoryId": {
++            "type": "string",
++            "maxLength": 128
++          },
++          "excerpt": {
++            "type": "string",
++            "maxLength": 600
++          },
++          "source": {
++            "type": "object",
++            "additionalProperties": false,
++            "required": [
++              "uri",
++              "revision"
++            ],
++            "properties": {
++              "uri": {
++                "type": "string"
++              },
++              "repositoryPath": {
++                "type": "string"
++              },
++              "revision": {
++                "type": "string"
++              }
++            }
++          },
++          "freshness": {
++            "type": "string",
++            "enum": [
++              "current",
++              "stale",
++              "unknown",
++              "source_missing"
++            ]
++          },
++          "confidence": {
++            "type": "string",
++            "enum": [
++              "draft",
++              "reviewed",
++              "approved"
++            ]
++          }
++        }
++      }
++    },
++    "redactionApplied": {
++      "type": "boolean"
++    },
++    "auditId": {
++      "type": [
++        "string",
++        "null"
++      ]
++    },
++    "errorCode": {
++      "type": [
++        "string",
++        "null"
++      ]
++    }
++  }
++}
+diff --git a/memory/provenance-and-freshness.md b/memory/provenance-and-freshness.md
+new file mode 100644
+index 0000000..e88146d
+--- /dev/null
++++ b/memory/provenance-and-freshness.md
+@@ -0,0 +1,37 @@
++# Provenance and freshness
++
++**Provenance** means "where did this come from?" **Freshness** means "is it still true?" Every memory record must answer both.
++
++## Every record shows
++
++| Field | Plain meaning |
++|---|---|
++| `source.uri` and `repositoryPath` | The approved place it came from |
++| `source.revision` | Which version of that place was read |
++| `excerpt` or `summary` | A short bounded extract, never a whole file |
++| `confidence` | `draft`, `reviewed`, or `approved` by a person |
++| `freshness` | `current`, `stale`, `unknown`, or `source_missing` |
++| `sensitivity` | `public`, `internal`, or `restricted` |
++| `humanReview` | Has a person checked it? |
++
++## Registering a source
++
++A person approves each source before it can be searched. Use `source-registration.schema.json`. Write down the owner role, who approved, when, patterns to exclude (for example files that may hold secrets), and how many days between reviews.
++
++Sources are never added automatically. Do not register a whole Drive or a whole repository "just in case". Register one folder for one purpose.
++
++## Checking freshness
++
++Compare the revision stored in the record with the source's revision today (its last-modified time or version). If they differ, mark the record `stale` and ask the source owner to review. Use `freshness-status.schema.json` for the result.
++
++## Comparing versions
++
++`compare_revisions` gives a short plain summary of what changed between two revisions. It does not copy the full text of either.
++
++## Reading the results
++
++If freshness is not `current`, the first sentence of any answer must say so. Never present stale memory as current fact.
++
++## Where to keep records
++
++Approved, non-restricted summaries can live in the repository or an approved Google Sheet. Restricted material stays in its approved system and is only referenced by ID. See `guardrails/data-retention-policy.md`.
+diff --git a/memory/source-registration.schema.json b/memory/source-registration.schema.json
+new file mode 100644
+index 0000000..ff7a505
+--- /dev/null
++++ b/memory/source-registration.schema.json
+@@ -0,0 +1,69 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "Source registration: an approved source for memory",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "sourceId",
++    "type",
++    "locator",
++    "sensitivity",
++    "ownerRole",
++    "approvedBy",
++    "approvedOn"
++  ],
++  "properties": {
++    "sourceId": {
++      "type": "string",
++      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++    },
++    "type": {
++      "type": "string",
++      "enum": [
++        "repository",
++        "google_drive",
++        "google_sheet",
++        "url",
++        "manual"
++      ]
++    },
++    "locator": {
++      "type": "string",
++      "minLength": 1,
++      "maxLength": 500
++    },
++    "sensitivity": {
++      "type": "string",
++      "enum": [
++        "public",
++        "internal",
++        "restricted"
++      ]
++    },
++    "ownerRole": {
++      "type": "string",
++      "maxLength": 128
++    },
++    "approvedBy": {
++      "type": "string",
++      "maxLength": 128
++    },
++    "approvedOn": {
++      "type": "string",
++      "format": "date"
++    },
++    "excludePatterns": {
++      "type": "array",
++      "maxItems": 50,
++      "items": {
++        "type": "string",
++        "maxLength": 200
++      }
++    },
++    "reviewEveryDays": {
++      "type": "integer",
++      "minimum": 1,
++      "maximum": 365
++    }
++  }
++}
+diff --git a/prompts/README.md b/prompts/README.md
+new file mode 100644
+index 0000000..3f69ed6
+--- /dev/null
++++ b/prompts/README.md
+@@ -0,0 +1,51 @@
++# Prompt library
++
++A **prompt file** is a saved, versioned instruction for an AI. It is a plain text file ending in `.prompt`. It has two parts: a short **header** (name, version, owner, privacy level, and which input/output shapes it uses) and the **instruction text**.
++
++The format is inspired by Google's open Dotprompt idea, but it is **not tied to Google, Gemini, or any provider**. Provider settings (model name, temperature, and so on) never go in a prompt file. They live in a Model Adapter (see `templates/model-adapter.yaml`).
++
++## Folder layout
++
++```text
++prompts/
++├── README.md
++├── diagnostics.md              # plain-language meaning of each check message
++├── schemas/                    # rules for the header
++└── library/
++    ├── evidence-summary.prompt # example prompt
++    ├── partials/               # small shared pieces, used as {{> piece-name}}
++    ├── schemas/                # the shape of inputs and outputs
++    └── fixtures/               # synthetic test cases
++```
++
++## How to add a prompt
++
++1. Copy `library/evidence-summary.prompt` and give the copy a lowercase name such as `monthly-report-outline.prompt`.
++2. Edit the header: new `name`, `version` (start at `1.0.0`), your `owner`, and `sensitivity` (`public`, `internal`, or `restricted`).
++3. Write the instruction. Put each thing a user must supply in double curly brackets, such as `{{topic}}`.
++4. Copy the two schema files in `library/schemas/`, rename them, and list your inputs and outputs.
++5. Add two or three synthetic test cases in `library/fixtures/`.
++6. Open a pull request. The automatic check runs the prompt checker and tells you in plain words what to fix.
++
++## What the checker looks for
++
++Missing or invalid header, variables used but not declared, declared but never used, broken schema links, circular shared pieces, unsupported helpers, secret-like text, unsafe web or file links, provider-specific settings, and input/output shape mismatches. See `diagnostics.md`.
++
++## Allowed instruction syntax (kept deliberately small)
++
++| Write this | It means |
++|---|---|
++| `{{name}}` | Insert the value called `name` |
++| `{{#if name}} ... {{/if}}` | Only if `name` was supplied |
++| `{{#each list}} ... {{this}} ... {{/each}}` | Repeat for each item |
++| `{{> piece}}` | Include `partials/piece.prompt` |
++
++Nothing else is allowed, so every prompt stays easy to read and to check.
++
++## Run the checker yourself (optional)
++
++Where to run: a terminal opened in the folder that contains `.agents` (the repository root).
++
++```bash
++python skills/prompt-authoring/scripts/validate_prompts.py prompts/library
++```
+diff --git a/prompts/diagnostics.md b/prompts/diagnostics.md
+new file mode 100644
+index 0000000..f67bf55
+--- /dev/null
++++ b/prompts/diagnostics.md
+@@ -0,0 +1,16 @@
++# Prompt checker messages in plain language
++
++| Message starts with | What it means | What to do |
++|---|---|---|
++| `missing-header` | The file has no header block between two `---` lines | Copy the header from the example prompt |
++| `bad-header` | A header field is missing or has an invalid value | Fix the named field (see `prompts/schemas`) |
++| `provider-field` | The header contains a model or provider setting | Remove it; put it in a Model Adapter |
++| `schema-missing` | The input or output shape file is not found | Check the path is relative to the prompt file |
++| `undefined-variable` | The text uses `{{x}}` but the input shape has no `x` | Add `x` to the input schema or remove it |
++| `unused-variable` | The input shape lists `x` but the text never uses it | Use it or remove it (a warning) |
++| `unsupported-syntax` | A helper other than if, each, or partial is used | Rewrite using only the allowed syntax |
++| `partial-missing` | `{{> name}}` points to a file that does not exist | Create `partials/name.prompt` |
++| `partial-cycle` | Shared pieces include each other in a loop | Break the loop |
++| `secret-like` | Text looks like a key, token, or password | Remove it and rotate the real secret |
++| `unsafe-url` | A `http:`, `file:`, or `data:` link is present | Use a reviewed `https:` link or remove it |
++| `fixture-mismatch` | A test case does not match the input shape | Fix the test input |
+diff --git a/prompts/library/evidence-summary.prompt b/prompts/library/evidence-summary.prompt
+new file mode 100644
+index 0000000..e2667c2
+--- /dev/null
++++ b/prompts/library/evidence-summary.prompt
+@@ -0,0 +1,24 @@
++---
++name: evidence-summary
++version: 1.0.0
++owner: health-program-team
++description: Summarize approved evidence so a person can review it.
++sensitivity: internal
++input_schema: schemas/evidence-summary-input.json
++output_schema: schemas/evidence-summary-output.json
++fixtures: fixtures/evidence-summary.tests.yaml
++requires:
++  - web-research
++  - citation-formatting
++---
++Summarize the approved evidence for {{topic}}.
++{{#if audience}}
++Write for this audience: {{audience}}.
++{{/if}}
++
++Use only these approved sources:
++{{#each sources}}
++- {{this}}
++{{/each}}
++
++{{> evidence-rules}}
+diff --git a/prompts/library/fixtures/evidence-summary.tests.yaml b/prompts/library/fixtures/evidence-summary.tests.yaml
+new file mode 100644
+index 0000000..35319c3
+--- /dev/null
++++ b/prompts/library/fixtures/evidence-summary.tests.yaml
+@@ -0,0 +1,20 @@
++# Synthetic test cases only. Never put real people, patients, or case details here.
++cases:
++  - caseId: basic-topic
++    synthetic: true
++    input:
++      topic: "Example topic for testing"
++      sources:
++        - "Example source A (synthetic)"
++    expect:
++      outputMustValidate: true
++      mustInclude: ["UNKNOWN"]
++  - caseId: with-audience
++    synthetic: true
++    input:
++      topic: "Another example topic"
++      audience: "Program managers"
++      sources:
++        - "Example source B (synthetic)"
++    expect:
++      outputMustValidate: true
+diff --git a/prompts/library/partials/evidence-rules.prompt b/prompts/library/partials/evidence-rules.prompt
+new file mode 100644
+index 0000000..3a776b8
+--- /dev/null
++++ b/prompts/library/partials/evidence-rules.prompt
+@@ -0,0 +1,8 @@
++Separate your answer into four lists:
++- verified facts (each with its source)
++- assumptions
++- limitations
++- unresolved questions
++
++Do not invent sources. If a source or tool was unavailable, say so plainly.
++Mark missing information as UNKNOWN. A person must review this before it is used.
+diff --git a/prompts/library/schemas/evidence-summary-input.json b/prompts/library/schemas/evidence-summary-input.json
+new file mode 100644
+index 0000000..da7a695
+--- /dev/null
++++ b/prompts/library/schemas/evidence-summary-input.json
+@@ -0,0 +1,12 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "evidence-summary input",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["topic", "sources"],
++  "properties": {
++    "topic": {"type": "string", "minLength": 1, "maxLength": 300},
++    "audience": {"type": "string", "maxLength": 200},
++    "sources": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"type": "string", "maxLength": 500}}
++  }
++}
+diff --git a/prompts/library/schemas/evidence-summary-output.json b/prompts/library/schemas/evidence-summary-output.json
+new file mode 100644
+index 0000000..7262c45
+--- /dev/null
++++ b/prompts/library/schemas/evidence-summary-output.json
+@@ -0,0 +1,14 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "evidence-summary output",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["verifiedFacts", "assumptions", "limitations", "unresolvedQuestions"],
++  "properties": {
++    "verifiedFacts": {"type": "array", "items": {"type": "object", "additionalProperties": false,
++      "required": ["fact", "source"], "properties": {"fact": {"type": "string"}, "source": {"type": "string"}}}},
++    "assumptions": {"type": "array", "items": {"type": "string"}},
++    "limitations": {"type": "array", "items": {"type": "string"}},
++    "unresolvedQuestions": {"type": "array", "items": {"type": "string"}}
++  }
++}
+diff --git a/prompts/schemas/prompt-frontmatter.schema.json b/prompts/schemas/prompt-frontmatter.schema.json
+new file mode 100644
+index 0000000..7f64669
+--- /dev/null
++++ b/prompts/schemas/prompt-frontmatter.schema.json
+@@ -0,0 +1,70 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "Prompt file header (frontmatter)",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "name",
++    "version",
++    "owner",
++    "sensitivity",
++    "input_schema",
++    "output_schema"
++  ],
++  "properties": {
++    "name": {
++      "type": "string",
++      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++    },
++    "version": {
++      "type": "string",
++      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
++    },
++    "owner": {
++      "type": "string",
++      "minLength": 1,
++      "maxLength": 128
++    },
++    "description": {
++      "type": "string",
++      "maxLength": 500
++    },
++    "sensitivity": {
++      "type": "string",
++      "enum": [
++        "public",
++        "internal",
++        "restricted"
++      ]
++    },
++    "input_schema": {
++      "type": "string",
++      "pattern": "^[A-Za-z0-9._/-]+$",
++      "not": {
++        "pattern": "\\.\\."
++      }
++    },
++    "output_schema": {
++      "type": "string",
++      "pattern": "^[A-Za-z0-9._/-]+$",
++      "not": {
++        "pattern": "\\.\\."
++      }
++    },
++    "fixtures": {
++      "type": "string",
++      "pattern": "^[A-Za-z0-9._/-]+$",
++      "not": {
++        "pattern": "\\.\\."
++      }
++    },
++    "requires": {
++      "type": "array",
++      "maxItems": 20,
++      "items": {
++        "type": "string",
++        "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++      }
++    }
++  }
++}
+diff --git a/providers/README.md b/providers/README.md
+new file mode 100644
+index 0000000..0de547a
+--- /dev/null
++++ b/providers/README.md
+@@ -0,0 +1,39 @@
++# Providers and model adapters
++
++An AI **provider** is a company or program that supplies a model (for example a chat app, an API, or a model on your own computer). This repository does not depend on any one provider. Each provider is reached through a small **model adapter** file, so switching providers means changing one file and nothing else.
++
++## What is here
++
++| File | Purpose |
++|---|---|
++| `provider-catalog.yaml` | A checklist of providers you may want to use, with what must be verified before use |
++| `adapters/manual-review.yaml` | No AI at all: the task becomes a checklist for a person (the safe default) |
++| `adapters/openai-compatible.yaml` | For any service that accepts requests in the common "OpenAI-compatible" style |
++| `adapters/google-gemini.yaml` | Placeholder settings for Google's Gemini models |
++| `adapters/anthropic-claude.yaml` | Placeholder settings for Anthropic's Claude models |
++| `adapters/local-model.yaml` | For a model that runs on your own computer |
++
++The shape of an adapter is defined in `schemas/model-adapter.schema.json`. Provider-specific settings go **only** under `extensions`.
++
++## Rules
++
++1. Never write a key, token, or password in an adapter. `credentialRef` is only the name of a secret stored somewhere approved.
++2. Model names, limits, prices, and data-use terms change. Every adapter has `verifiedOn`; leave it as a placeholder until a person has checked the provider's current official page.
++3. Free tiers may allow the provider to use your prompts to improve its products. Treat every free-tier provider as **not allowed for restricted data** unless a written policy says otherwise.
++4. Every task needs a manual fallback. Use `manual-review` when no provider is approved, unavailable, or the data is restricted.
++5. Do not copy a provider's setting into a prompt file. The prompt checker rejects it.
++
++## How to switch providers (no coding)
++
++1. Open `templates/model-adapter.yaml` and copy it (or copy one file from `adapters`).
++2. Change `metadata.name`, `provider`, and `model`, and fill `credentialRef` with the secret's name.
++3. After a person verifies the provider's official terms, fill `verifiedOn` with the date.
++4. In your task file, change `modelRef.name` to the new adapter's name.
++
++## Checking
++
++Where to run: a terminal opened in the repository root folder.
++
++```bash
++python skills/agent-task-planning/scripts/validate_agent_yaml.py providers/adapters
++```
+diff --git a/providers/adapters/anthropic-claude.yaml b/providers/adapters/anthropic-claude.yaml
+new file mode 100644
+index 0000000..4df7b1f
+--- /dev/null
++++ b/providers/adapters/anthropic-claude.yaml
+@@ -0,0 +1,21 @@
++apiVersion: agents.cpintl.org/v1alpha1
++kind: ModelAdapter
++metadata:
++  name: anthropic-claude-adapter
++  owner: "{responsible-role}"
++  description: "Placeholder for Anthropic Claude. Verify model names, limits, and data-use terms first."
++spec:
++  provider: anthropic
++  model: "{model-id}"
++  credentialRef: "{approved-secret-name}"
++  capabilities:
++    structuredOutput: true
++    vision: false
++    tools: true
++  limits:
++    contextTokens: "verify-at-runtime"
++    outputTokens: "verify-at-runtime"
++  verifiedOn: "{YYYY-MM-DD}"
++  extensions:
++    providerSpecific:
++      "{provider-field}": "{value}"
+diff --git a/providers/adapters/google-gemini.yaml b/providers/adapters/google-gemini.yaml
+new file mode 100644
+index 0000000..863d577
+--- /dev/null
++++ b/providers/adapters/google-gemini.yaml
+@@ -0,0 +1,21 @@
++apiVersion: agents.cpintl.org/v1alpha1
++kind: ModelAdapter
++metadata:
++  name: google-gemini-adapter
++  owner: "{responsible-role}"
++  description: "Placeholder for Google Gemini. Verify model names, limits, and data-use terms first."
++spec:
++  provider: google
++  model: "{model-id}"
++  credentialRef: "{approved-secret-name}"
++  capabilities:
++    structuredOutput: true
++    vision: false
++    tools: true
++  limits:
++    contextTokens: "verify-at-runtime"
++    outputTokens: "verify-at-runtime"
++  verifiedOn: "{YYYY-MM-DD}"
++  extensions:
++    providerSpecific:
++      "{provider-field}": "{value}"
+diff --git a/providers/adapters/local-model.yaml b/providers/adapters/local-model.yaml
+new file mode 100644
+index 0000000..35283d1
+--- /dev/null
++++ b/providers/adapters/local-model.yaml
+@@ -0,0 +1,21 @@
++apiVersion: agents.cpintl.org/v1alpha1
++kind: ModelAdapter
++metadata:
++  name: local-model-adapter
++  owner: "{responsible-role}"
++  description: "A model running on your own computer. Secure the machine and verify the model's license."
++spec:
++  provider: local
++  model: "{model-id}"
++  credentialRef: "{approved-secret-name}"
++  capabilities:
++    structuredOutput: true
++    vision: false
++    tools: true
++  limits:
++    contextTokens: "verify-at-runtime"
++    outputTokens: "verify-at-runtime"
++  verifiedOn: "{YYYY-MM-DD}"
++  extensions:
++    providerSpecific:
++      "{provider-field}": "{value}"
+diff --git a/providers/adapters/manual-review.yaml b/providers/adapters/manual-review.yaml
+new file mode 100644
+index 0000000..c08b033
+--- /dev/null
++++ b/providers/adapters/manual-review.yaml
+@@ -0,0 +1,15 @@
++apiVersion: agents.cpintl.org/v1alpha1
++kind: ModelAdapter
++metadata:
++  name: manual-review-adapter
++  owner: "{responsible-role}"
++  description: "No AI. Creates a checklist task for a person. Safe default for restricted data."
++spec:
++  provider: manual-review
++  model: none
++  capabilities:
++    structuredOutput: false
++    vision: false
++    tools: false
++  verifiedOn: "not-applicable"
++  extensions: {}
+diff --git a/providers/adapters/openai-compatible.yaml b/providers/adapters/openai-compatible.yaml
+new file mode 100644
+index 0000000..c5da868
+--- /dev/null
++++ b/providers/adapters/openai-compatible.yaml
+@@ -0,0 +1,21 @@
++apiVersion: agents.cpintl.org/v1alpha1
++kind: ModelAdapter
++metadata:
++  name: openai-compatible-adapter
++  owner: "{responsible-role}"
++  description: "Any service that accepts OpenAI-compatible requests. Verify terms first."
++spec:
++  provider: openai-compatible
++  model: "{model-id}"
++  credentialRef: "{approved-secret-name}"
++  capabilities:
++    structuredOutput: true
++    vision: false
++    tools: true
++  limits:
++    contextTokens: "verify-at-runtime"
++    outputTokens: "verify-at-runtime"
++  verifiedOn: "{YYYY-MM-DD}"
++  extensions:
++    providerSpecific:
++      "{provider-field}": "{value}"
+diff --git a/providers/provider-catalog.yaml b/providers/provider-catalog.yaml
+new file mode 100644
+index 0000000..4861772
+--- /dev/null
++++ b/providers/provider-catalog.yaml
+@@ -0,0 +1,45 @@
++# Providers you may want to use. This is a CHECKLIST, not a recommendation and not proof of
++# availability, price, quality, or privacy. Fill "verifiedOn" only after a person reads the
++# provider's current official terms. Unknown facts stay "verify".
++version: "1.0"
++status: draft
++defaults:
++  allowedForRestrictedData: false
++  manualFallback: manual-review
++providers:
++  - providerId: manual-review
++    displayName: "No AI (a person does the task)"
++    adapterFile: adapters/manual-review.yaml
++    costModel: none
++    dataUseNote: "No data leaves your control."
++    verifiedOn: "not-applicable"
++  - providerId: google-gemini
++    displayName: "Google Gemini (app or API)"
++    adapterFile: adapters/google-gemini.yaml
++    costModel: verify
++    dataUseNote: "verify: free-tier data-use terms"
++    verifiedOn: "{YYYY-MM-DD}"
++  - providerId: anthropic-claude
++    displayName: "Anthropic Claude (app or API)"
++    adapterFile: adapters/anthropic-claude.yaml
++    costModel: verify
++    dataUseNote: "verify: data-use terms for your plan"
++    verifiedOn: "{YYYY-MM-DD}"
++  - providerId: openai-compatible
++    displayName: "Any OpenAI-compatible service (for example OpenAI, Groq, DeepSeek, Mistral - verify each)"
++    adapterFile: adapters/openai-compatible.yaml
++    costModel: verify
++    dataUseNote: "verify: each service separately"
++    verifiedOn: "{YYYY-MM-DD}"
++  - providerId: local-model
++    displayName: "A model on your own computer (for example Gemma or MedGemma via a local runtime)"
++    adapterFile: adapters/local-model.yaml
++    costModel: "your own hardware"
++    dataUseNote: "Data stays on the machine, but the machine must be secured."
++    verifiedOn: "{YYYY-MM-DD}"
++  - providerId: coding-assistants
++    displayName: "Coding assistants (for example GitHub Copilot, Opencode) - use for editing files, not for restricted data"
++    adapterFile: adapters/openai-compatible.yaml
++    costModel: verify
++    dataUseNote: "verify: what the assistant sends to its provider"
++    verifiedOn: "{YYYY-MM-DD}"
+diff --git a/schemas/agent-instance.schema.json b/schemas/agent-instance.schema.json
+new file mode 100644
+index 0000000..70a6128
+--- /dev/null
++++ b/schemas/agent-instance.schema.json
+@@ -0,0 +1,191 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "AgentInstance: one running or finished copy of a template",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "apiVersion",
++    "kind",
++    "metadata",
++    "spec"
++  ],
++  "properties": {
++    "apiVersion": {
++      "const": "agents.cpintl.org/v1alpha1"
++    },
++    "kind": {
++      "const": "AgentInstance"
++    },
++    "metadata": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "name"
++      ],
++      "properties": {
++        "name": {
++          "type": "string",
++          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++        },
++        "owner": {
++          "type": "string",
++          "maxLength": 128
++        },
++        "description": {
++          "type": "string",
++          "maxLength": 500
++        }
++      }
++    },
++    "spec": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "templateRef"
++      ],
++      "properties": {
++        "templateRef": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "kind",
++            "name"
++          ],
++          "properties": {
++            "kind": {
++              "type": "string",
++              "enum": [
++                "AgentTemplate"
++              ]
++            },
++            "name": {
++              "type": "string",
++              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++            },
++            "uri": {
++              "type": "string",
++              "maxLength": 500
++            }
++          }
++        },
++        "taskRef": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "kind",
++            "name"
++          ],
++          "properties": {
++            "kind": {
++              "type": "string",
++              "enum": [
++                "AgentTask"
++              ]
++            },
++            "name": {
++              "type": "string",
++              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++            },
++            "uri": {
++              "type": "string",
++              "maxLength": 500
++            }
++          }
++        },
++        "runtime": {
++          "type": "string",
++          "enum": [
++            "manual",
++            "google-workspace",
++            "local",
++            "custom"
++          ]
++        },
++        "checkpointPolicyRef": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "kind",
++            "name"
++          ],
++          "properties": {
++            "kind": {
++              "type": "string",
++              "enum": [
++                "CheckpointPolicy"
++              ]
++            },
++            "name": {
++              "type": "string",
++              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++            },
++            "uri": {
++              "type": "string",
++              "maxLength": 500
++            }
++          }
++        }
++      }
++    },
++    "status": {
++      "type": "object",
++      "additionalProperties": false,
++      "properties": {
++        "phase": {
++          "type": "string",
++          "enum": [
++            "created",
++            "preparing",
++            "ready",
++            "running",
++            "waiting_for_review",
++            "paused",
++            "suspended",
++            "completed",
++            "failed",
++            "terminated"
++          ]
++        },
++        "conditions": {
++          "type": "array",
++          "maxItems": 30,
++          "items": {
++            "type": "object",
++            "additionalProperties": false,
++            "required": [
++              "type",
++              "status"
++            ],
++            "properties": {
++              "type": {
++                "type": "string",
++                "minLength": 1,
++                "maxLength": 64
++              },
++              "status": {
++                "type": "string",
++                "enum": [
++                  "True",
++                  "False",
++                  "Unknown"
++                ]
++              },
++              "reason": {
++                "type": "string",
++                "maxLength": 128
++              },
++              "message": {
++                "type": "string",
++                "maxLength": 500
++              },
++              "lastChangedAt": {
++                "type": "string",
++                "format": "date-time"
++              }
++            }
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/agent-policy.schema.json b/schemas/agent-policy.schema.json
+new file mode 100644
+index 0000000..e93fec2
+--- /dev/null
++++ b/schemas/agent-policy.schema.json
+@@ -0,0 +1,89 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "AgentPolicy: rules a run must follow",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "apiVersion",
++    "kind",
++    "metadata",
++    "spec"
++  ],
++  "properties": {
++    "apiVersion": {
++      "const": "agents.cpintl.org/v1alpha1"
++    },
++    "kind": {
++      "const": "AgentPolicy"
++    },
++    "metadata": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "name"
++      ],
++      "properties": {
++        "name": {
++          "type": "string",
++          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++        },
++        "owner": {
++          "type": "string",
++          "maxLength": 128
++        },
++        "description": {
++          "type": "string",
++          "maxLength": 500
++        }
++      }
++    },
++    "spec": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "sensitivity",
++        "network",
++        "humanReviewRequired"
++      ],
++      "properties": {
++        "sensitivity": {
++          "type": "string",
++          "enum": [
++            "public",
++            "internal",
++            "restricted"
++          ]
++        },
++        "network": {
++          "type": "string",
++          "enum": [
++            "deny-by-default",
++            "allowlist"
++          ]
++        },
++        "allowedHosts": {
++          "type": "array",
++          "maxItems": 50,
++          "items": {
++            "type": "string",
++            "maxLength": 253
++          }
++        },
++        "humanReviewRequired": {
++          "type": "boolean"
++        },
++        "allowExternalWrite": {
++          "type": "boolean"
++        },
++        "allowAiForRestrictedData": {
++          "type": "boolean"
++        },
++        "retentionDays": {
++          "type": "integer",
++          "minimum": 0,
++          "maximum": 3650
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/agent-task.schema.json b/schemas/agent-task.schema.json
+new file mode 100644
+index 0000000..5fa65f7
+--- /dev/null
++++ b/schemas/agent-task.schema.json
+@@ -0,0 +1,254 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "AgentTask: what the agent should do",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "apiVersion",
++    "kind",
++    "metadata",
++    "spec"
++  ],
++  "properties": {
++    "apiVersion": {
++      "const": "agents.cpintl.org/v1alpha1"
++    },
++    "kind": {
++      "const": "AgentTask"
++    },
++    "metadata": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "name"
++      ],
++      "properties": {
++        "name": {
++          "type": "string",
++          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++        },
++        "owner": {
++          "type": "string",
++          "maxLength": 128
++        },
++        "description": {
++          "type": "string",
++          "maxLength": 500
++        }
++      }
++    },
++    "spec": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "objective",
++        "brain",
++        "workspaceRef",
++        "policyRef",
++        "modelRef",
++        "output"
++      ],
++      "properties": {
++        "objective": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 2000
++        },
++        "brain": {
++          "type": "string",
++          "pattern": "^[A-Za-z0-9._/-]+$",
++          "not": {
++            "pattern": "\\.\\."
++          }
++        },
++        "skills": {
++          "type": "array",
++          "maxItems": 20,
++          "items": {
++            "type": "string",
++            "pattern": "^[A-Za-z0-9._/-]+$",
++            "not": {
++              "pattern": "\\.\\."
++            }
++          }
++        },
++        "prompt": {
++          "type": "string",
++          "pattern": "^[A-Za-z0-9._/-]+$",
++          "not": {
++            "pattern": "\\.\\."
++          }
++        },
++        "workspaceRef": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "kind",
++            "name"
++          ],
++          "properties": {
++            "kind": {
++              "type": "string",
++              "enum": [
++                "AgentWorkspace"
++              ]
++            },
++            "name": {
++              "type": "string",
++              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++            },
++            "uri": {
++              "type": "string",
++              "maxLength": 500
++            }
++          }
++        },
++        "policyRef": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "kind",
++            "name"
++          ],
++          "properties": {
++            "kind": {
++              "type": "string",
++              "enum": [
++                "AgentPolicy"
++              ]
++            },
++            "name": {
++              "type": "string",
++              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++            },
++            "uri": {
++              "type": "string",
++              "maxLength": 500
++            }
++          }
++        },
++        "modelRef": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "kind",
++            "name"
++          ],
++          "properties": {
++            "kind": {
++              "type": "string",
++              "enum": [
++                "ModelAdapter"
++              ]
++            },
++            "name": {
++              "type": "string",
++              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++            },
++            "uri": {
++              "type": "string",
++              "maxLength": 500
++            }
++          }
++        },
++        "output": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "format"
++          ],
++          "properties": {
++            "format": {
++              "type": "string",
++              "enum": [
++                "google-docs",
++                "google-sheets",
++                "markdown",
++                "manual"
++              ]
++            },
++            "template": {
++              "type": "string",
++              "pattern": "^[A-Za-z0-9._/-]+$",
++              "not": {
++                "pattern": "\\.\\."
++              }
++            }
++          }
++        },
++        "lifecycle": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "allowPause": {
++              "type": "boolean"
++            },
++            "allowResume": {
++              "type": "boolean"
++            }
++          }
++        }
++      }
++    },
++    "status": {
++      "type": "object",
++      "additionalProperties": false,
++      "properties": {
++        "phase": {
++          "type": "string",
++          "enum": [
++            "created",
++            "preparing",
++            "ready",
++            "running",
++            "waiting_for_review",
++            "paused",
++            "suspended",
++            "completed",
++            "failed",
++            "terminated"
++          ]
++        },
++        "conditions": {
++          "type": "array",
++          "maxItems": 30,
++          "items": {
++            "type": "object",
++            "additionalProperties": false,
++            "required": [
++              "type",
++              "status"
++            ],
++            "properties": {
++              "type": {
++                "type": "string",
++                "minLength": 1,
++                "maxLength": 64
++              },
++              "status": {
++                "type": "string",
++                "enum": [
++                  "True",
++                  "False",
++                  "Unknown"
++                ]
++              },
++              "reason": {
++                "type": "string",
++                "maxLength": 128
++              },
++              "message": {
++                "type": "string",
++                "maxLength": 500
++              },
++              "lastChangedAt": {
++                "type": "string",
++                "format": "date-time"
++              }
++            }
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/agent-template.schema.json b/schemas/agent-template.schema.json
+new file mode 100644
+index 0000000..c1a164c
+--- /dev/null
++++ b/schemas/agent-template.schema.json
+@@ -0,0 +1,145 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "AgentTemplate: reusable logical agent",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "apiVersion",
++    "kind",
++    "metadata",
++    "spec"
++  ],
++  "properties": {
++    "apiVersion": {
++      "const": "agents.cpintl.org/v1alpha1"
++    },
++    "kind": {
++      "const": "AgentTemplate"
++    },
++    "metadata": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "name"
++      ],
++      "properties": {
++        "name": {
++          "type": "string",
++          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++        },
++        "owner": {
++          "type": "string",
++          "maxLength": 128
++        },
++        "description": {
++          "type": "string",
++          "maxLength": 500
++        }
++      }
++    },
++    "spec": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "brain",
++        "policy"
++      ],
++      "properties": {
++        "brain": {
++          "type": "string",
++          "pattern": "^[A-Za-z0-9._/-]+$",
++          "not": {
++            "pattern": "\\.\\."
++          }
++        },
++        "skills": {
++          "type": "array",
++          "maxItems": 20,
++          "items": {
++            "type": "string",
++            "pattern": "^[A-Za-z0-9._/-]+$",
++            "not": {
++              "pattern": "\\.\\."
++            }
++          }
++        },
++        "tools": {
++          "type": "array",
++          "maxItems": 30,
++          "items": {
++            "type": "object",
++            "additionalProperties": false,
++            "required": [
++              "name",
++              "capability"
++            ],
++            "properties": {
++              "name": {
++                "type": "string",
++                "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++              },
++              "capability": {
++                "type": "string"
++              }
++            }
++          }
++        },
++        "workspace": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "sources": {
++              "type": "array",
++              "maxItems": 50,
++              "items": {
++                "type": "string",
++                "maxLength": 300
++              }
++            }
++          }
++        },
++        "policy": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "sensitivity",
++            "humanReviewRequired"
++          ],
++          "properties": {
++            "network": {
++              "type": "string",
++              "enum": [
++                "deny-by-default",
++                "allowlist"
++              ]
++            },
++            "sensitivity": {
++              "type": "string",
++              "enum": [
++                "public",
++                "internal",
++                "restricted"
++              ]
++            },
++            "humanReviewRequired": {
++              "type": "boolean"
++            }
++          }
++        },
++        "persistence": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "mode": {
++              "type": "string",
++              "enum": [
++                "cold-start",
++                "checkpointed"
++              ]
++            }
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/agent-workspace.schema.json b/schemas/agent-workspace.schema.json
+new file mode 100644
+index 0000000..d74200c
+--- /dev/null
++++ b/schemas/agent-workspace.schema.json
+@@ -0,0 +1,131 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "AgentWorkspace: approved sources and tools",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "apiVersion",
++    "kind",
++    "metadata",
++    "spec"
++  ],
++  "properties": {
++    "apiVersion": {
++      "const": "agents.cpintl.org/v1alpha1"
++    },
++    "kind": {
++      "const": "AgentWorkspace"
++    },
++    "metadata": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "name"
++      ],
++      "properties": {
++        "name": {
++          "type": "string",
++          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++        },
++        "owner": {
++          "type": "string",
++          "maxLength": 128
++        },
++        "description": {
++          "type": "string",
++          "maxLength": 500
++        }
++      }
++    },
++    "spec": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "sources"
++      ],
++      "properties": {
++        "sources": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 50,
++          "items": {
++            "type": "object",
++            "additionalProperties": false,
++            "required": [
++              "sourceId",
++              "type"
++            ],
++            "properties": {
++              "sourceId": {
++                "type": "string",
++                "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++              },
++              "type": {
++                "type": "string",
++                "enum": [
++                  "repository",
++                  "google_drive",
++                  "google_sheet",
++                  "url",
++                  "manual"
++                ]
++              },
++              "locator": {
++                "type": "string",
++                "maxLength": 500
++              },
++              "scope": {
++                "type": "string",
++                "maxLength": 300
++              },
++              "sensitivity": {
++                "type": "string",
++                "enum": [
++                  "public",
++                  "internal",
++                  "restricted"
++                ]
++              }
++            }
++          }
++        },
++        "tools": {
++          "type": "array",
++          "maxItems": 30,
++          "items": {
++            "type": "object",
++            "additionalProperties": false,
++            "required": [
++              "name",
++              "capability"
++            ],
++            "properties": {
++              "name": {
++                "type": "string",
++                "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++              },
++              "capability": {
++                "type": "string",
++                "enum": [
++                  "search",
++                  "read",
++                  "write",
++                  "notify",
++                  "compute"
++                ]
++              },
++              "mode": {
++                "type": "string",
++                "enum": [
++                  "read-only",
++                  "dry-run",
++                  "write-with-approval"
++                ]
++              }
++            }
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/checkpoint-policy.schema.json b/schemas/checkpoint-policy.schema.json
+new file mode 100644
+index 0000000..98e9bb2
+--- /dev/null
++++ b/schemas/checkpoint-policy.schema.json
+@@ -0,0 +1,71 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "CheckpointPolicy: when to save progress",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "apiVersion",
++    "kind",
++    "metadata",
++    "spec"
++  ],
++  "properties": {
++    "apiVersion": {
++      "const": "agents.cpintl.org/v1alpha1"
++    },
++    "kind": {
++      "const": "CheckpointPolicy"
++    },
++    "metadata": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "name"
++      ],
++      "properties": {
++        "name": {
++          "type": "string",
++          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++        },
++        "owner": {
++          "type": "string",
++          "maxLength": 128
++        },
++        "description": {
++          "type": "string",
++          "maxLength": 500
++        }
++      }
++    },
++    "spec": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "mode"
++      ],
++      "properties": {
++        "mode": {
++          "type": "string",
++          "enum": [
++            "none",
++            "on-pause",
++            "every-step"
++          ]
++        },
++        "keepLast": {
++          "type": "integer",
++          "minimum": 1,
++          "maximum": 50
++        },
++        "containsRestrictedData": {
++          "type": "boolean"
++        },
++        "expiresAfterDays": {
++          "type": "integer",
++          "minimum": 1,
++          "maximum": 365
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/human-approval.schema.json b/schemas/human-approval.schema.json
+new file mode 100644
+index 0000000..4577ba0
+--- /dev/null
++++ b/schemas/human-approval.schema.json
+@@ -0,0 +1,62 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "HumanApproval: a person's yes or no on a run",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "approvalId",
++    "runId",
++    "decision",
++    "reviewerRole",
++    "decidedOn"
++  ],
++  "properties": {
++    "approvalId": {
++      "type": "string",
++      "pattern": "^[A-Za-z0-9._-]{1,128}$"
++    },
++    "runId": {
++      "type": "string",
++      "pattern": "^[A-Za-z0-9._-]{1,128}$"
++    },
++    "decision": {
++      "type": "string",
++      "enum": [
++        "approved",
++        "rejected",
++        "needs_changes"
++      ]
++    },
++    "reviewerRole": {
++      "type": "string",
++      "minLength": 1,
++      "maxLength": 128
++    },
++    "decidedOn": {
++      "type": "string",
++      "format": "date"
++    },
++    "checklist": {
++      "type": "object",
++      "additionalProperties": false,
++      "properties": {
++        "sourcesChecked": {
++          "type": "boolean"
++        },
++        "noSensitiveDataExposed": {
++          "type": "boolean"
++        },
++        "factsMatchSources": {
++          "type": "boolean"
++        },
++        "readyToShare": {
++          "type": "boolean"
++        }
++      }
++    },
++    "note": {
++      "type": "string",
++      "maxLength": 500
++    }
++  }
++}
+diff --git a/schemas/lifecycle-condition.schema.json b/schemas/lifecycle-condition.schema.json
+new file mode 100644
+index 0000000..b701dd7
+--- /dev/null
++++ b/schemas/lifecycle-condition.schema.json
+@@ -0,0 +1,37 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "LifecycleCondition: one yes/no fact about a run",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "type",
++    "status"
++  ],
++  "properties": {
++    "type": {
++      "type": "string",
++      "minLength": 1,
++      "maxLength": 64
++    },
++    "status": {
++      "type": "string",
++      "enum": [
++        "True",
++        "False",
++        "Unknown"
++      ]
++    },
++    "reason": {
++      "type": "string",
++      "maxLength": 128
++    },
++    "message": {
++      "type": "string",
++      "maxLength": 500
++    },
++    "lastChangedAt": {
++      "type": "string",
++      "format": "date-time"
++    }
++  }
++}
+diff --git a/schemas/model-adapter.schema.json b/schemas/model-adapter.schema.json
+new file mode 100644
+index 0000000..924d2d6
+--- /dev/null
++++ b/schemas/model-adapter.schema.json
+@@ -0,0 +1,107 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "ModelAdapter: provider-neutral model settings",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "apiVersion",
++    "kind",
++    "metadata",
++    "spec"
++  ],
++  "properties": {
++    "apiVersion": {
++      "const": "agents.cpintl.org/v1alpha1"
++    },
++    "kind": {
++      "const": "ModelAdapter"
++    },
++    "metadata": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "name"
++      ],
++      "properties": {
++        "name": {
++          "type": "string",
++          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++        },
++        "owner": {
++          "type": "string",
++          "maxLength": 128
++        },
++        "description": {
++          "type": "string",
++          "maxLength": 500
++        }
++      }
++    },
++    "spec": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "provider",
++        "model"
++      ],
++      "properties": {
++        "provider": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 64
++        },
++        "model": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 128
++        },
++        "credentialRef": {
++          "type": "string",
++          "maxLength": 200,
++          "description": "Name of an approved secret. Never the secret itself."
++        },
++        "capabilities": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "structuredOutput": {
++              "type": "boolean"
++            },
++            "vision": {
++              "type": "boolean"
++            },
++            "tools": {
++              "type": "boolean"
++            }
++          }
++        },
++        "limits": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "contextTokens": {
++              "type": [
++                "integer",
++                "string"
++              ]
++            },
++            "outputTokens": {
++              "type": [
++                "integer",
++                "string"
++              ]
++            }
++          }
++        },
++        "verifiedOn": {
++          "type": "string",
++          "maxLength": 32
++        },
++        "extensions": {
++          "type": "object",
++          "description": "Provider-specific settings live only here."
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/run-event.schema.json b/schemas/run-event.schema.json
+new file mode 100644
+index 0000000..de16dcf
+--- /dev/null
++++ b/schemas/run-event.schema.json
+@@ -0,0 +1,66 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "RunEvent: one line in a run's history",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "eventId",
++    "runId",
++    "type",
++    "timestamp"
++  ],
++  "properties": {
++    "eventId": {
++      "type": "string",
++      "pattern": "^[A-Za-z0-9._-]{1,128}$"
++    },
++    "runId": {
++      "type": "string",
++      "pattern": "^[A-Za-z0-9._-]{1,128}$"
++    },
++    "type": {
++      "type": "string",
++      "enum": [
++        "created",
++        "started",
++        "source_checked",
++        "tool_called",
++        "review_requested",
++        "approved",
++        "rejected",
++        "paused",
++        "resumed",
++        "failed",
++        "completed"
++      ]
++    },
++    "phase": {
++      "type": "string",
++      "enum": [
++        "created",
++        "preparing",
++        "ready",
++        "running",
++        "waiting_for_review",
++        "paused",
++        "suspended",
++        "completed",
++        "failed",
++        "terminated"
++      ]
++    },
++    "actorRole": {
++      "type": "string",
++      "maxLength": 128
++    },
++    "timestamp": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "note": {
++      "type": "string",
++      "maxLength": 500,
++      "description": "Short plain note. No personal or restricted data."
++    }
++  }
++}
+diff --git a/schemas/typed-reference.schema.json b/schemas/typed-reference.schema.json
+new file mode 100644
+index 0000000..f8290f4
+--- /dev/null
++++ b/schemas/typed-reference.schema.json
+@@ -0,0 +1,33 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "title": "TypedReference: a pointer that says what it points to",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "kind",
++    "name"
++  ],
++  "properties": {
++    "kind": {
++      "type": "string",
++      "enum": [
++        "AgentTask",
++        "AgentWorkspace",
++        "AgentPolicy",
++        "ModelAdapter",
++        "AgentTemplate",
++        "AgentInstance",
++        "CheckpointPolicy",
++        "Source"
++      ]
++    },
++    "name": {
++      "type": "string",
++      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
++    },
++    "uri": {
++      "type": "string",
++      "maxLength": 500
++    }
++  }
++}
+diff --git a/skills/README.md b/skills/README.md
+index fe056bd..e9ddf60 100644
+--- a/skills/README.md
++++ b/skills/README.md
+@@ -20,3 +20,12 @@ python /home/ubuntu/skills/skill-creator/scripts/quick_validate.py skills/{skill
+ ```
+ 
+ The repository workflow also checks metadata, references, free-resource evidence, likely secrets, unsafe paths, and whitespace.
++
++## Skills for agent work
++
++| Skill | Use it to |
++|---|---|
++| `prompt-authoring` | Save and check reusable prompts |
++| `memory-search` | Recall approved facts with source and freshness (read-only) |
++| `agent-task-planning` | Plan a task with a workspace, policy, model, and approval |
++| `workspace-drive-search` | Find approved Drive resources |
+diff --git a/skills/agent-task-planning/SKILL.md b/skills/agent-task-planning/SKILL.md
+new file mode 100644
+index 0000000..6133d69
+--- /dev/null
++++ b/skills/agent-task-planning/SKILL.md
+@@ -0,0 +1,36 @@
++---
++name: agent-task-planning
++description: Help a non-coder plan an agent task by filling in five plain templates - Task, Workspace, Policy, Model Adapter, and Human Approval - and by tracking the run's progress with simple status conditions. Use when someone asks an agent to do multi-step work, wants to set up a reusable agent, or needs to know what the agent may use and who must approve.
++---
++
++# Agent task planning
++
++Use this skill to turn a request in plain words into a small set of filled-in files that say **what** to do, **which sources and tools** may be used, **what is allowed**, **which AI provider** (if any), and **who must approve**. Nothing runs until a named person approves.
++
++## Workflow
++
++1. Restate the objective in one sentence and ask who will review the result.
++2. Classify sensitivity. If the work involves information about identifiable people, patients, or safeguarding cases, mark it `restricted` and plan a manual (no AI) route.
++3. Fill the five templates, in this order: Workspace (approved sources and tools), Policy (safe defaults), Model Adapter (start with `manual-review` if no provider is approved), Task (points to the other three by name), Human Approval (left as `needs_changes` until a person decides).
++4. Keep every value in the templates plain. Use placeholders such as `{responsible-role}` until a fact is verified.
++5. Check the files with the checker below and fix each message.
++6. Record the run's progress with the phases in `references/lifecycle-and-status.md`. Move to `waiting_for_review` before any result is shared.
++7. Never let an agent widen its own workspace, policy, or model. A person edits those files.
++
++## Check
++
++Where to run: a terminal opened in the repository root folder.
++
++```bash
++python skills/agent-task-planning/scripts/validate_agent_yaml.py templates
++```
++
++The checker confirms the files match their schemas and that every reference (for example a task naming a workspace) points to a file that exists. It does not prove the plan is wise or approved.
++
++## Spreadsheet route
++
++Non-coders can use the Google Sheets control panel in the repository `templates` folder instead of editing YAML. Each tab matches one template. Use `templates/task-planning-checklist.md` in this skill as the review list.
++
++## Boundaries
++
++Do not include secrets, personal data, or real Drive IDs in plans. Do not treat a valid file as permission: the connector, Workspace role, or provider policy remains authoritative. If a provider or integration is unavailable, create a manual task instead of guessing.
+diff --git a/skills/agent-task-planning/references/lifecycle-and-status.md b/skills/agent-task-planning/references/lifecycle-and-status.md
+new file mode 100644
+index 0000000..79220d4
+--- /dev/null
++++ b/skills/agent-task-planning/references/lifecycle-and-status.md
+@@ -0,0 +1,35 @@
++# Lifecycle and status conditions
++
++## Phases of a run
++
++| Phase | Plain meaning |
++|---|---|
++| `created` | The request is written down. Nothing has started |
++| `preparing` | Sources and permissions are being checked |
++| `ready` | Everything is checked and waiting for a person to start |
++| `running` | Work is in progress |
++| `waiting_for_review` | Work is done; a named person must decide |
++| `paused` | Stopped on purpose; can continue |
++| `suspended` | Stopped and saved (see checkpoint policy); can continue later |
++| `completed` | A person approved and the result was delivered |
++| `failed` | Something went wrong; read the note and decide what to do |
++| `terminated` | Ended for good; will not continue |
++
++## Conditions
++
++Conditions are yes/no facts, each with a status of `True`, `False`, or `Unknown`, and an optional short reason.
++
++| Condition type | Meaning |
++|---|---|
++| `SourceValidated` | Every source is approved and current |
++| `PolicyChecked` | The policy allows this task |
++| `HumanApproval` | A named person has approved |
++| `OutputValidated` | The result matches the expected shape |
++
++## Separating the pieces
++
++The **template** is the reusable recipe. The **instance** is one run. The **workspace** is what it may see. The **policy** is what it may do. The **model adapter** is which AI (or a person) does the work. Keeping these apart lets you change one without touching the others.
++
++## Not required now
++
++Pausing, saving progress, and resuming are planning ideas. Nothing in this repository runs an agent automatically. Add runtime tooling only after a small manual pilot works.
+diff --git a/skills/agent-task-planning/scripts/validate_agent_yaml.py b/skills/agent-task-planning/scripts/validate_agent_yaml.py
+new file mode 100644
+index 0000000..673d55a
+--- /dev/null
++++ b/skills/agent-task-planning/scripts/validate_agent_yaml.py
+@@ -0,0 +1,79 @@
++#!/usr/bin/env python3
++"""Check agent YAML files (task, workspace, policy, model, template, run) in plain language.
++
++Usage: python validate_agent_yaml.py PATH [PATH ...]
++PATH may be a .yaml file or a folder. Files that are not agent files are skipped.
++Also checks that references (for example a task pointing to a workspace) match a file
++in the same set. Needs: pip install pyyaml jsonschema. No network access.
++"""
++from __future__ import annotations
++
++import json
++import sys
++from pathlib import Path
++
++import jsonschema
++import yaml
++
++ROOT = Path(__file__).resolve().parents[3]
++SCHEMAS = ROOT / "schemas"
++KIND_TO_SCHEMA = {
++    "AgentTask": "agent-task", "AgentWorkspace": "agent-workspace", "AgentPolicy": "agent-policy",
++    "ModelAdapter": "model-adapter", "AgentTemplate": "agent-template", "AgentInstance": "agent-instance",
++    "CheckpointPolicy": "checkpoint-policy",
++}
++REF_FIELDS = {"AgentTask": ("workspaceRef", "policyRef", "modelRef"),
++              "AgentInstance": ("templateRef", "taskRef", "checkpointPolicyRef")}
++
++
++def load_schema(name: str) -> dict:
++    return json.loads((SCHEMAS / f"{name}.schema.json").read_text(encoding="utf-8"))
++
++
++def main(argv: list[str]) -> int:
++    if not argv:
++        print(__doc__)
++        return 2
++    files: list[Path] = []
++    for a in argv:
++        p = Path(a)
++        files += sorted(p.rglob("*.y*ml")) if p.is_dir() else [p]
++    errors = 0
++    known: set[tuple[str, str]] = set()
++    docs: list[tuple[Path, dict]] = []
++    for f in files:
++        try:
++            data = yaml.safe_load(f.read_text(encoding="utf-8"))
++        except yaml.YAMLError as exc:
++            print(f"ERROR  bad-yaml: {f}: {exc}")
++            errors += 1
++            continue
++        if not isinstance(data, dict):
++            continue
++        if "approvalId" in data:
++            schema_name = "human-approval"
++        elif data.get("kind") in KIND_TO_SCHEMA and str(data.get("apiVersion", "")).startswith("agents.cpintl.org/"):
++            schema_name = KIND_TO_SCHEMA[data["kind"]]
++        else:
++            continue  # not an agent file
++        problems = list(jsonschema.Draft202012Validator(load_schema(schema_name)).iter_errors(data))
++        for err in problems:
++            loc = ".".join(str(x) for x in err.path) or "top level"
++            print(f"ERROR  bad-value: {f}: {loc}: {err.message}")
++        errors += len(problems)
++        if not problems:
++            print(f"OK     {f} ({data.get('kind', 'HumanApproval')})")
++            if "kind" in data:
++                known.add((data["kind"], data["metadata"]["name"]))
++                docs.append((f, data))
++    for f, data in docs:
++        for field in REF_FIELDS.get(data["kind"], ()):
++            ref = data["spec"].get(field)
++            if ref and (ref["kind"], ref["name"]) not in known:
++                print(f"ERROR  broken-reference: {f}: {field} points to {ref['kind']} '{ref['name']}' which was not found in the files checked")
++                errors += 1
++    return 1 if errors else 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main(sys.argv[1:]))
+diff --git a/skills/agent-task-planning/templates/task-planning-checklist.md b/skills/agent-task-planning/templates/task-planning-checklist.md
+new file mode 100644
+index 0000000..fcc7af8
+--- /dev/null
++++ b/skills/agent-task-planning/templates/task-planning-checklist.md
+@@ -0,0 +1,22 @@
++# Task planning checklist
++
++**Task name:** `{task-name}`  **Owner role:** `{owner-role}`  **Date:** `{YYYY-MM-DD}`
++
++## Before approving
++
++- [ ] The objective is one plain sentence.
++- [ ] A named reviewer role is written down.
++- [ ] Sensitivity is set. Personal, patient, or safeguarding information means `restricted` and no AI.
++- [ ] Every source in the workspace is approved by a person and has a scope.
++- [ ] Tools are read-only or dry-run unless a person approved otherwise.
++- [ ] The policy denies network access by default and requires human review.
++- [ ] The model adapter contains no keys, passwords, or tokens.
++- [ ] A manual fallback exists if the AI or an integration is unavailable.
++- [ ] The checker reports no errors.
++
++## After the run
++
++- [ ] Sources were checked against the result.
++- [ ] Nothing sensitive was exposed.
++- [ ] The Human Approval record is filled in.
++- [ ] Outcome and lessons are noted in the run record.
+diff --git a/skills/memory-search/SKILL.md b/skills/memory-search/SKILL.md
+new file mode 100644
+index 0000000..26fcccd
+--- /dev/null
++++ b/skills/memory-search/SKILL.md
+@@ -0,0 +1,47 @@
++---
++name: memory-search
++description: Find and quote evidence from approved, registered sources with source, revision, and freshness shown on every result, using only read-only operations. Use when an agent needs to recall a decision, check whether a source is still current, or compare two versions of an approved document without copying restricted content.
++---
++
++# Memory search (read-only)
++
++Use this skill when an answer must be traced back to an approved source. Every result carries where it came from, which revision it was, how fresh it is, and how sensitive it is. The skill only reads. It never indexes new sources by itself, never deletes, and never runs free-form queries.
++
++## Allowed operations
++
++| Operation | What it does | Writes anything? |
++|---|---|---|
++| `list_sources` | Lists approved, registered sources | No |
++| `source_status` | Shows freshness of one source | No |
++| `search_memory` | Searches approved sources for a short phrase, at most 20 results | No |
++| `get_evidence` | Returns a short bounded excerpt for one memory record | No |
++| `compare_revisions` | Summarizes what changed between two revisions of one source | No |
++| `refresh_source` | Asks a person to re-check a source; dry-run only until approved | Only after human approval |
++
++Any other operation is refused.
++
++## Workflow
++
++1. Confirm the source is registered (a person approved it, with owner, sensitivity, and review date). If not, stop and create a manual task to register it.
++2. Build a request like `templates/memory-search-request.json`. Keep the query short and plain words.
++3. Check the request with the checker below.
++4. Return only bounded excerpts (short quotes with source and revision), never whole files.
++5. Show freshness. If a result is `stale`, `unknown`, or `source_missing`, say so in the first sentence and suggest `refresh_source`.
++6. For `restricted` sources, do not return excerpts. Return a manual-review task naming the source owner.
++
++## Not allowed
++
++- Arbitrary database or graph queries, or free-form file paths.
++- Automatic background indexing of all Drive or repository files.
++- Cross-project linking, memory deletion, or unbounded semantic search.
++- Storing secrets, personal data, or restricted case details as memory.
++
++## Check
++
++Where to run: a terminal opened in the repository root folder.
++
++```bash
++python skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
++```
++
++Read `references/memory-contract.md` for the request and result shapes and the freshness rules. The checker only checks structure; it does not grant access.
+diff --git a/skills/memory-search/references/memory-contract.md b/skills/memory-search/references/memory-contract.md
+new file mode 100644
+index 0000000..f8f4cc2
+--- /dev/null
++++ b/skills/memory-search/references/memory-contract.md
+@@ -0,0 +1,42 @@
++# Memory contract
++
++## Records, sources, and freshness
++
++A **memory record** is a short summary plus where it came from (`source.uri`, optional `repositoryPath`, and `revision`), a confidence (`draft`, `reviewed`, `approved`), a freshness, a sensitivity, and a human-review state. The schema is `memory-record.schema.json` in the repository `memory` folder.
++
++A **source registration** says a person approved a source: `sourceId`, type, locator, sensitivity, owner role, who approved, when, exclusion patterns, and how often to review.
++
++**Freshness**
++
++| Value | Meaning |
++|---|---|
++| `current` | The stored revision matches the source today |
++| `stale` | The source changed since the record was made |
++| `unknown` | It has not been checked yet |
++| `source_missing` | The source could not be found |
++
++## Request shape
++
++```json
++{
++  "operation": "search_memory",
++  "sourceIds": ["{registered-source-id}"],
++  "query": "{short plain words}",
++  "limit": 5,
++  "sensitivityCeiling": "internal",
++  "requesterRole": "{role}",
++  "dryRun": true
++}
++```
++
++## Result shape
++
++Results follow `memory-search-result.schema.json`. Each has a `memoryId`, a bounded `excerpt` (600 characters at most), the `source` with `revision`, and `freshness`.
++
++## Rules
++
++- Excerpts are bounded. Do not paste whole documents.
++- Provider-issued IDs stay exactly as returned and are treated as sensitive operational data.
++- Logs keep only minimal audit fields (audit id, operation, status, role, time), never prompts or excerpts.
++- A person approves every new source and every `refresh_source` that changes anything.
++- If the bridge or a source is unavailable, return `manual_review` with the exact source and search words; never fabricate a result.
+diff --git a/skills/memory-search/scripts/validate_memory_request.py b/skills/memory-search/scripts/validate_memory_request.py
+new file mode 100644
+index 0000000..a7c7603
+--- /dev/null
++++ b/skills/memory-search/scripts/validate_memory_request.py
+@@ -0,0 +1,64 @@
++#!/usr/bin/env python3
++"""Validate a read-only memory request without network access.
++
++Usage: python validate_memory_request.py request.json
++"""
++from __future__ import annotations
++
++import json
++import re
++import sys
++from pathlib import Path
++
++ALLOWED = {"list_sources", "source_status", "search_memory", "get_evidence", "compare_revisions", "refresh_source"}
++SENS = {"public", "internal", "restricted"}
++SOURCE_ID = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
++QUERY_LANGUAGE = re.compile(r"(?i)\b(match|return|select|drop|delete|merge|cypher|union)\b|[;{}<>`$\\]")
++SECRET = re.compile(r"(?i)api[_-]?key|private[_-]?key|bearer |password|token")
++
++
++def fail(message: str) -> None:
++    raise SystemExit(f"INVALID: {message}")
++
++
++def main() -> int:
++    if len(sys.argv) != 2:
++        fail("usage: validate_memory_request.py request.json")
++    try:
++        data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
++    except (OSError, json.JSONDecodeError) as exc:
++        fail(f"cannot read request: {exc}")
++    if not isinstance(data, dict):
++        fail("request must be a JSON object")
++    if data.get("operation") not in ALLOWED:
++        fail("operation is not one of: " + ", ".join(sorted(ALLOWED)))
++    if data.get("sensitivityCeiling") not in SENS:
++        fail("sensitivityCeiling must be public, internal, or restricted")
++    if not isinstance(data.get("requesterRole"), str) or not data["requesterRole"].strip():
++        fail("requesterRole is required")
++    ids = data.get("sourceIds", [])
++    if not isinstance(ids, list) or len(ids) > 20 or any(not isinstance(i, str) or not SOURCE_ID.match(i) for i in ids):
++        fail("sourceIds must be up to 20 registered source ids in lowercase-kebab-case")
++    if data["operation"] in {"search_memory", "get_evidence", "compare_revisions", "refresh_source", "source_status"} and not ids:
++        fail("this operation needs at least one registered source id")
++    if data["operation"] == "search_memory":
++        query = data.get("query")
++        if not isinstance(query, str) or not query.strip() or len(query) > 200:
++            fail("query must be 1-200 characters of plain words")
++        if QUERY_LANGUAGE.search(query):
++            fail("query looks like a database command; use plain words only")
++        limit = data.get("limit", 5)
++        if not isinstance(limit, int) or not 1 <= limit <= 20:
++            fail("limit must be a whole number from 1 to 20")
++    if data["operation"] == "refresh_source" and data.get("dryRun") is not True:
++        fail("refresh_source must be a dry run until a person approves")
++    if "path" in data or "filePath" in data:
++        fail("free-form file paths are not allowed; use registered source ids")
++    if SECRET.search(json.dumps(data)):
++        fail("possible secret field")
++    print("VALID")
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/skills/memory-search/templates/memory-search-request.json b/skills/memory-search/templates/memory-search-request.json
+new file mode 100644
+index 0000000..9aaa4e3
+--- /dev/null
++++ b/skills/memory-search/templates/memory-search-request.json
+@@ -0,0 +1,9 @@
++{
++  "operation": "search_memory",
++  "sourceIds": ["program-policy"],
++  "query": "human review",
++  "limit": 5,
++  "sensitivityCeiling": "internal",
++  "requesterRole": "{role}",
++  "dryRun": true
++}
+diff --git a/skills/memory-search/templates/source-registration-example.json b/skills/memory-search/templates/source-registration-example.json
+new file mode 100644
+index 0000000..fcd270f
+--- /dev/null
++++ b/skills/memory-search/templates/source-registration-example.json
+@@ -0,0 +1,11 @@
++{
++  "sourceId": "program-policy",
++  "type": "repository",
++  "locator": "cpintl-org/.agents@main:guardrails",
++  "sensitivity": "internal",
++  "ownerRole": "{owner-role}",
++  "approvedBy": "{approver-role}",
++  "approvedOn": "2026-01-01",
++  "excludePatterns": ["*.env", "*secret*"],
++  "reviewEveryDays": 90
++}
+diff --git a/skills/prompt-authoring/SKILL.md b/skills/prompt-authoring/SKILL.md
+new file mode 100644
+index 0000000..891aef4
+--- /dev/null
++++ b/skills/prompt-authoring/SKILL.md
+@@ -0,0 +1,36 @@
++---
++name: prompt-authoring
++description: Write, review, and check versioned prompt files (.prompt) that are provider-neutral, have declared inputs and outputs, shared pieces, synthetic test cases, and plain-language checks. Use when someone wants a reusable instruction for an AI, wants to turn a good chat prompt into a saved one, or must review a prompt before it is added to the repository.
++---
++
++# Prompt authoring
++
++Use this skill to turn a useful instruction into a saved **prompt file** that any AI provider can use. A prompt file has a short header and the instruction text. The format is inspired by Google's open Dotprompt idea but never depends on Gemini, Genkit, or Google AI Studio.
++
++## Workflow
++
++1. Ask what the prompt should do, who will read the result, and whether any information about people, patients, or safeguarding cases is involved. If yes, set `sensitivity: restricted` and stop: a person handles that work by hand.
++2. Copy `templates/prompt-template.prompt`. Give it a lowercase kebab-case name, version `1.0.0`, an owner role, and a sensitivity of `public`, `internal`, or `restricted`.
++3. Write the instruction in plain sentences. Use only the four allowed pieces of syntax listed in `references/prompt-format.md`.
++4. Declare every input in an input schema file and the expected result in an output schema file. Paths are relative to the prompt file.
++5. Add two or three **synthetic** test cases. Never use real names, patient details, or case notes.
++6. Keep provider settings out. Model name, temperature, and similar settings belong in a Model Adapter template, never in a prompt file.
++7. Run the checker (see below), fix each message, and ask a person to review the wording before it is merged.
++
++## Rules
++
++- Do not invent sources or tools. The prompt must tell the AI to say plainly when a source or tool was unavailable.
++- Mark missing information as `UNKNOWN`; do not guess.
++- Never put secrets, keys, private links, or personal data in a prompt, schema, or test case.
++- Every prompt for consequential output must say that a person reviews it before use.
++- A prompt without a working manual fallback (a person doing the task by hand) is incomplete.
++
++## Check
++
++Where to run: a terminal opened in the repository root folder.
++
++```bash
++python skills/prompt-authoring/scripts/validate_prompts.py prompts/library
++```
++
++Read `references/prompt-format.md` for the header fields, syntax, and what each check message means. Use `scripts/validate_prompts.py` only as a structure check; it does not judge whether the prompt is good, safe, or true.
+diff --git a/skills/prompt-authoring/references/prompt-format.md b/skills/prompt-authoring/references/prompt-format.md
+new file mode 100644
+index 0000000..6f4c6bd
+--- /dev/null
++++ b/skills/prompt-authoring/references/prompt-format.md
+@@ -0,0 +1,47 @@
++# Prompt file format
++
++## Shape of a file
++
++```text
++---
++name: evidence-summary
++version: 1.0.0
++owner: health-program-team
++description: One sentence.
++sensitivity: internal
++input_schema: schemas/evidence-summary-input.json
++output_schema: schemas/evidence-summary-output.json
++fixtures: fixtures/evidence-summary.tests.yaml
++requires:
++  - web-research
++---
++Instruction text with {{variables}} goes here.
++```
++
++## Header fields
++
++| Field | Required | Meaning |
++|---|---|---|
++| `name` | yes | Lowercase kebab-case, same as the file name without `.prompt` |
++| `version` | yes | Three numbers such as `1.0.0`. Change it whenever the wording changes |
++| `owner` | yes | A role or team, not a personal email |
++| `sensitivity` | yes | `public`, `internal`, or `restricted` |
++| `input_schema` | yes | Path to the input shape file |
++| `output_schema` | yes | Path to the output shape file |
++| `fixtures` | no | Path to synthetic test cases |
++| `requires` | no | Names of skills or capabilities the prompt expects |
++| `description` | no | One plain sentence |
++
++Any other field is rejected. Provider fields (`model`, `config`, `temperature`, `tools`, and similar) get a `provider-field` message.
++
++## Allowed syntax
++
++`{{name}}`, `{{#if name}} ... {{else}} ... {{/if}}`, `{{#each list}} ... {{this}} ... {{/each}}`, and `{{> piece}}` (shared piece stored in a `partials` folder next to the prompt as `piece.prompt`). Everything else is refused so prompts stay readable and checkable.
++
++## Versioning rule
++
++Patch (`1.0.1`) for wording fixes, minor (`1.1.0`) for a new optional input, major (`2.0.0`) for a change that breaks existing inputs or outputs. Keep a short note in the pull request describing why.
++
++## Evaluation link
++
++Each prompt should have at least one synthetic test case and, before wide use, a human review using the rubric in the repository `evaluation` folder.
+diff --git a/skills/prompt-authoring/scripts/validate_prompts.py b/skills/prompt-authoring/scripts/validate_prompts.py
+new file mode 100644
+index 0000000..841c02d
+--- /dev/null
++++ b/skills/prompt-authoring/scripts/validate_prompts.py
+@@ -0,0 +1,224 @@
++#!/usr/bin/env python3
++"""Check .prompt files in plain language. No network access, no credentials.
++
++Usage: python validate_prompts.py PATH [PATH ...]
++PATH may be a .prompt file or a folder (searched recursively; partials are skipped).
++Exit code 0 = no errors (warnings allowed). Exit code 1 = at least one error.
++"""
++from __future__ import annotations
++
++import json
++import re
++import sys
++from pathlib import Path
++
++import yaml
++
++try:  # optional but recommended: pip install jsonschema
++    import jsonschema
++except ImportError:  # pragma: no cover
++    jsonschema = None
++
++HEADER = re.compile(r"\A---\n(.*?)\n---\n(.*)\Z", re.S)
++TAG = re.compile(r"\{\{(.*?)\}\}", re.S)
++VAR = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
++PARTIAL_NAME = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
++REQUIRED = ("name", "version", "owner", "sensitivity", "input_schema", "output_schema")
++PROVIDER_KEYS = {"model", "config", "temperature", "maxOutputTokens", "max_tokens", "top_p",
++                 "top_k", "provider", "ext", "tools", "toolChoice", "genkit"}
++SECRET = re.compile(
++    r"AKIA[0-9A-Z]{16}|BEGIN (?:RSA|OPENSSH|EC|DSA) PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|"
++    r"sk-[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{20,}|"
++    r"(?i:(?:api[_-]?key|secret|password|access[_-]?token)\s*[:=]\s*[^\s{'\"]{6,})")
++UNSAFE_URL = re.compile(r"(?i)(?:\bhttp://|\bfile://|\bjavascript:|\bdata:[a-z]+/[a-z0-9.+-]+)")
++
++
++class Report:
++    def __init__(self) -> None:
++        self.errors: list[str] = []
++        self.warnings: list[str] = []
++
++    def error(self, code: str, msg: str) -> None:
++        self.errors.append(f"ERROR  {code}: {msg}")
++
++    def warn(self, code: str, msg: str) -> None:
++        self.warnings.append(f"WARN   {code}: {msg}")
++
++
++def scan_body(text: str, where: str, rep: Report):
++    """Return (variables, partial_names). Reports unsupported syntax and unbalanced blocks."""
++    variables: set[str] = set()
++    partials: list[str] = []
++    stack: list[str] = []
++    if "{{{" in text:
++        rep.error("unsupported-syntax", f"{where}: triple curly brackets are not allowed")
++    for raw in TAG.findall(text):
++        tag = raw.strip()
++        if tag.startswith("#if ") or tag.startswith("#each "):
++            kind, name = tag[1:].split(None, 1)
++            name = name.strip()
++            if not VAR.match(name):
++                rep.error("unsupported-syntax", f"{where}: '{{{{{tag}}}}}' needs a plain variable name")
++            else:
++                variables.add(name)
++            stack.append(kind)
++        elif tag in ("/if", "/each"):
++            if not stack or stack[-1] != tag[1:]:
++                rep.error("unsupported-syntax", f"{where}: unexpected '{{{{{tag}}}}}'")
++            else:
++                stack.pop()
++        elif tag == "else":
++            if not stack or stack[-1] != "if":
++                rep.error("unsupported-syntax", f"{where}: 'else' is only allowed inside if")
++        elif tag == "this":
++            if "each" not in stack:
++                rep.error("unsupported-syntax", f"{where}: 'this' is only allowed inside each")
++        elif tag.startswith(">"):
++            name = tag[1:].strip()
++            if not PARTIAL_NAME.match(name):
++                rep.error("unsupported-syntax", f"{where}: bad shared-piece name '{name}'")
++            else:
++                partials.append(name)
++        elif VAR.match(tag):
++            variables.add(tag)
++        else:
++            rep.error("unsupported-syntax", f"{where}: '{{{{{tag}}}}}' is not allowed (only variables, if, each, and > piece)")
++    if stack:
++        rep.error("unsupported-syntax", f"{where}: block '{stack[-1]}' is never closed")
++    return variables, partials
++
++
++def collect(prompt_dir: Path, body: str, where: str, rep: Report, seen: list[str]):
++    variables, partials = scan_body(body, where, rep)
++    for name in partials:
++        if name in seen:
++            rep.error("partial-cycle", f"{where}: shared pieces loop: {' -> '.join(seen + [name])}")
++            continue
++        path = prompt_dir / "partials" / f"{name}.prompt"
++        if not path.is_file():
++            rep.error("partial-missing", f"{where}: partials/{name}.prompt not found")
++            continue
++        text = path.read_text(encoding="utf-8")
++        check_text_safety(text, f"partials/{name}.prompt", rep)
++        m = HEADER.match(text)
++        sub_vars = collect(prompt_dir, m.group(2) if m else text, f"partials/{name}.prompt", rep, seen + [name])
++        variables |= sub_vars
++    return variables
++
++
++def check_text_safety(text: str, where: str, rep: Report) -> None:
++    if SECRET.search(text):
++        rep.error("secret-like", f"{where}: text looks like a key, token, or password")
++    if UNSAFE_URL.search(text):
++        rep.error("unsafe-url", f"{where}: only reviewed https links are allowed (no http, file, or data links)")
++
++
++def load_schema(path: Path, label: str, rep: Report):
++    if not path.is_file():
++        rep.error("schema-missing", f"{label} file not found: {path.name}")
++        return None
++    try:
++        schema = json.loads(path.read_text(encoding="utf-8"))
++    except json.JSONDecodeError as exc:
++        rep.error("schema-missing", f"{label} is not valid JSON: {exc}")
++        return None
++    if not isinstance(schema, dict) or schema.get("type") != "object":
++        rep.error("bad-header", f"{label} must describe an object (type: object)")
++        return None
++    if jsonschema:
++        try:
++            jsonschema.Draft202012Validator.check_schema(schema)
++        except jsonschema.SchemaError as exc:
++            rep.error("schema-missing", f"{label} is not a valid schema: {exc.message}")
++            return None
++    return schema
++
++
++def check_prompt(path: Path) -> Report:
++    rep = Report()
++    text = path.read_text(encoding="utf-8")
++    m = HEADER.match(text)
++    if not m:
++        rep.error("missing-header", f"{path.name}: no header between two --- lines")
++        return rep
++    try:
++        header = yaml.safe_load(m.group(1)) or {}
++    except yaml.YAMLError as exc:
++        rep.error("bad-header", f"{path.name}: header is not valid YAML: {exc}")
++        return rep
++    if not isinstance(header, dict):
++        rep.error("bad-header", f"{path.name}: header must be a list of name: value lines")
++        return rep
++    for key in sorted(PROVIDER_KEYS & set(header)):
++        rep.error("provider-field", f"{path.name}: '{key}' is a provider setting; move it to a Model Adapter")
++    for key in REQUIRED:
++        if key not in header:
++            rep.error("bad-header", f"{path.name}: missing header field '{key}'")
++    if jsonschema and not rep.errors:
++        schema_file = Path(__file__).resolve().parents[3] / "prompts" / "schemas" / "prompt-frontmatter.schema.json"
++        if schema_file.is_file():
++            schema = json.loads(schema_file.read_text(encoding="utf-8"))
++            for err in jsonschema.Draft202012Validator(schema).iter_errors(header):
++                loc = ".".join(str(p) for p in err.path) or "header"
++                rep.error("bad-header", f"{path.name}: {loc}: {err.message}")
++    check_text_safety(text, path.name, rep)
++    if rep.errors:
++        return rep
++
++    folder = path.parent
++    in_schema = load_schema(folder / header["input_schema"], "input_schema", rep)
++    load_schema(folder / header["output_schema"], "output_schema", rep)
++    used = collect(folder, m.group(2), path.name, rep, [])
++    if in_schema is not None:
++        declared = set((in_schema.get("properties") or {}).keys())
++        for name in sorted(used - declared):
++            rep.error("undefined-variable", f"{path.name}: '{{{{{name}}}}}' is used but not in the input schema")
++        for name in sorted(declared - used):
++            rep.warn("unused-variable", f"{path.name}: input '{name}' is declared but never used")
++    fixtures = header.get("fixtures")
++    if fixtures and in_schema is not None and jsonschema:
++        fx = folder / fixtures
++        if not fx.is_file():
++            rep.error("fixture-mismatch", f"fixtures file not found: {fixtures}")
++        else:
++            data = yaml.safe_load(fx.read_text(encoding="utf-8")) or {}
++            for case in data.get("cases", []):
++                cid = case.get("caseId", "?")
++                if case.get("synthetic") is not True:
++                    rep.error("fixture-mismatch", f"case '{cid}' must say synthetic: true")
++                for err in jsonschema.Draft202012Validator(in_schema).iter_errors(case.get("input", {})):
++                    rep.error("fixture-mismatch", f"case '{cid}': {err.message}")
++    return rep
++
++
++def main(argv: list[str]) -> int:
++    if not argv:
++        print(__doc__)
++        return 2
++    files: list[Path] = []
++    for arg in argv:
++        p = Path(arg)
++        if p.is_dir():
++            files += [f for f in sorted(p.rglob("*.prompt")) if "partials" not in f.parts]
++        elif p.is_file():
++            files.append(p)
++        else:
++            print(f"ERROR  path-missing: {arg}")
++            return 1
++    if not files:
++        print("ERROR  no-prompts: no .prompt files found")
++        return 1
++    failed = False
++    for f in files:
++        rep = check_prompt(f)
++        for line in rep.warnings + rep.errors:
++            print(line)
++        if rep.errors:
++            failed = True
++        else:
++            print(f"OK     {f}")
++    return 1 if failed else 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main(sys.argv[1:]))
+diff --git a/skills/prompt-authoring/templates/prompt-template.prompt b/skills/prompt-authoring/templates/prompt-template.prompt
+new file mode 100644
+index 0000000..ecce40a
+--- /dev/null
++++ b/skills/prompt-authoring/templates/prompt-template.prompt
+@@ -0,0 +1,14 @@
++---
++name: my-new-prompt
++version: 1.0.0
++owner: "{responsible-role}"
++description: "{one plain sentence}"
++sensitivity: internal
++input_schema: schemas/my-new-prompt-input.json
++output_schema: schemas/my-new-prompt-output.json
++fixtures: fixtures/my-new-prompt.tests.yaml
++---
++Describe the task for {{topic}} in plain sentences.
++
++Mark missing information as UNKNOWN. Do not invent sources.
++A person must review the result before it is used.
+diff --git a/skills/workspace-drive-search/SKILL.md b/skills/workspace-drive-search/SKILL.md
+index 0f60af4..7842cad 100644
+--- a/skills/workspace-drive-search/SKILL.md
++++ b/skills/workspace-drive-search/SKILL.md
+@@ -24,3 +24,7 @@ Do not put OAuth tokens, service-account keys, beneficiary data, or private file
+ ## References
+ 
+ Read `references/bridge-contract.md` for the typed request/response contract and `scripts/validate_bridge_request.py` for network-free validation.
++
++## Related skill
++
++To recall approved facts with their source, revision, and freshness rather than only locating files, use the `memory-search` skill. It is read-only and only works on sources a person has registered.
+diff --git a/templates/README.md b/templates/README.md
+index 98c4f73..5b35f1c 100644
+--- a/templates/README.md
++++ b/templates/README.md
+@@ -9,3 +9,19 @@ Templates define structure, not facts. Use them for Google Docs, Sheets, Markdow
+ - Use `google-docs-outline.md` for narrative documents and `google-sheets-schema.json` for structured records.
+ - Include owner, status, source/access date, sensitivity, and review date where relevant.
+ - Validate JSON and preserve provider-issued IDs exactly.
++
++## Agent planning templates
++
++| File | Answers |
++|---|---|
++| `agent-task.yaml` | What should be done? |
++| `agent-workspace.yaml` | Which approved sources and tools may be used? |
++| `agent-policy.yaml` | What is allowed (privacy, network, review)? |
++| `model-adapter.yaml` | Which AI provider and model, or a person by hand? |
++| `agent-template.yaml` | A reusable recipe for one kind of agent |
++| `lifecycle-run.yaml` | One run and its progress status |
++| `checkpoint-policy.yaml` | When progress is saved |
++| `human-approval.yaml` | A person's yes or no |
++| `agent-control-panel/` | The same ideas as six Google Sheets tabs, plus a request form outline |
++
++Start with `agent-control-panel/README.md` if you prefer Google Sheets to editing files. Placeholders in curly brackets, such as `{responsible-role}`, stay until a person fills in a verified value.
+diff --git a/templates/agent-control-panel/README.md b/templates/agent-control-panel/README.md
+new file mode 100644
+index 0000000..f06f128
+--- /dev/null
++++ b/templates/agent-control-panel/README.md
+@@ -0,0 +1,37 @@
++# Agent control panel (Google Sheets, no coding)
++
++This folder turns the technical templates into **six tabs of one Google Sheet**. A person fills in rows; nothing runs by itself. A run only starts after a named person approves it.
++
++| Tab (sheet name) | File to import | What it answers |
++|---|---|---|
++| AgentTasks | `agent-tasks.csv` | What do we want done? |
++| AgentWorkspaces | `agent-workspaces.csv` | Which approved sources and tools may be used? |
++| AgentPolicies | `agent-policies.csv` | What is allowed (privacy, network, review)? |
++| AgentRuns | `agent-runs.csv` | Where is each run right now? |
++| AgentApprovals | `agent-approvals.csv` | Who said yes or no, and when? |
++| AgentSources | `agent-sources.csv` | Are our sources still current? |
++
++## Create the Sheet (click by click)
++
++1. On your computer, open Google Sheets in a browser and click **Blank spreadsheet**. Name it `agent-control-panel`.
++2. Click **File → Import → Upload**, then drag in `agent-tasks.csv`.
++3. Choose **Replace current sheet** for the first file, then click **Import data**. Rename the tab to `AgentTasks`.
++4. For each remaining file: **File → Import → Upload**, choose **Insert new sheet(s)**, click **Import data**, then rename the new tab (see the table).
++5. Turn on drop-down lists (recommended): click a column letter such as `phase` in `AgentRuns` → **Data → Data validation → Add rule** → **Drop-down** and type the allowed values below.
++
++## Allowed values for drop-downs
++
++| Column | Values |
++|---|---|
++| `sensitivity` | public, internal, restricted |
++| `phase` | created, preparing, ready, running, waiting_for_review, paused, suspended, completed, failed, terminated |
++| `decision` | approved, rejected, needs_changes |
++| `freshness` | current, stale, unknown, source_missing |
++| `outputFormat` | google-docs, google-sheets, markdown, manual |
++
++## Rules that keep it safe
++
++- Do not type names, phone numbers, patient details, passwords, or keys into any tab.
++- `restricted` rows are for people to handle by hand. No AI runs on them unless a written policy allows it.
++- Share the Sheet only with named people or groups, never "anyone with the link".
++- If a source is `stale` or `source_missing`, pause the task and ask the source owner.
+diff --git a/templates/agent-control-panel/agent-approvals.csv b/templates/agent-control-panel/agent-approvals.csv
+new file mode 100644
+index 0000000..c6eb774
+--- /dev/null
++++ b/templates/agent-control-panel/agent-approvals.csv
+@@ -0,0 +1,2 @@
++approvalId,runId,decision,reviewerRole,decidedOn,sourcesChecked,noSensitiveDataExposed,factsMatchSources,readyToShare,note
++approval-001,run-001,needs_changes,{reviewer-role},{YYYY-MM-DD},FALSE,FALSE,FALSE,FALSE,
+diff --git a/templates/agent-control-panel/agent-policies.csv b/templates/agent-control-panel/agent-policies.csv
+new file mode 100644
+index 0000000..6217098
+--- /dev/null
++++ b/templates/agent-control-panel/agent-policies.csv
+@@ -0,0 +1,2 @@
++policyId,sensitivity,network,humanReviewRequired,allowExternalWrite,allowAiForRestrictedData,retentionDays
++policy-001,internal,deny-by-default,TRUE,FALSE,FALSE,30
+diff --git a/templates/agent-control-panel/agent-runs.csv b/templates/agent-control-panel/agent-runs.csv
+new file mode 100644
+index 0000000..e6f2476
+--- /dev/null
++++ b/templates/agent-control-panel/agent-runs.csv
+@@ -0,0 +1,2 @@
++runId,taskId,phase,startedOn,ownerRole,outcome,notes
++run-001,task-001,created,{YYYY-MM-DD},{owner-role},,
+diff --git a/templates/agent-control-panel/agent-sources.csv b/templates/agent-control-panel/agent-sources.csv
+new file mode 100644
+index 0000000..f77bccd
+--- /dev/null
++++ b/templates/agent-control-panel/agent-sources.csv
+@@ -0,0 +1,2 @@
++sourceId,sourceType,locator,revision,freshness,sensitivity,ownerRole,lastCheckedOn,reviewEveryDays
++program-policy,repository,cpintl-org/.agents@main:guardrails,{revision-or-modified-time},unknown,internal,{owner-role},{YYYY-MM-DD},90
+diff --git a/templates/agent-control-panel/agent-tasks.csv b/templates/agent-control-panel/agent-tasks.csv
+new file mode 100644
+index 0000000..fcca901
+--- /dev/null
++++ b/templates/agent-control-panel/agent-tasks.csv
+@@ -0,0 +1,2 @@
++taskId,requestedBy,objective,brain,workspaceId,policyId,modelId,outputFormat,status,createdOn
++task-001,{name-or-role},{plain-language objective},brains/doc-writer-agent.md,workspace-001,policy-001,model-001,google-docs,requested,{YYYY-MM-DD}
+diff --git a/templates/agent-control-panel/agent-workspaces.csv b/templates/agent-control-panel/agent-workspaces.csv
+new file mode 100644
+index 0000000..221bda4
+--- /dev/null
++++ b/templates/agent-control-panel/agent-workspaces.csv
+@@ -0,0 +1,2 @@
++workspaceId,sourceId,sourceType,locator,scope,sensitivity,approvedBy,approvedOn
++workspace-001,program-policy,repository,cpintl-org/.agents@main:guardrails,Read-only,internal,{approver-role},{YYYY-MM-DD}
+diff --git a/templates/agent-control-panel/intake-form-questions.md b/templates/agent-control-panel/intake-form-questions.md
+new file mode 100644
+index 0000000..256e143
+--- /dev/null
++++ b/templates/agent-control-panel/intake-form-questions.md
+@@ -0,0 +1,11 @@
++# Request form (Google Forms) - questions to add
++
++Create a Google Form named `agent-task-request` (**Google Forms → Blank form**). Add these questions in order. Link responses to a Sheet with **Responses → Link to Sheets**, then copy new rows into `AgentTasks` after a person has checked them.
++
++1. What do you want done? (Paragraph, required)
++2. Which approved sources should be used? (Short answer, required)
++3. Is any information about a person, patient, or safeguarding case involved? (Multiple choice: Yes / No / Not sure, required)
++4. Who will review the result before it is shared? (Short answer, required)
++5. Where should the result go? (Multiple choice: Google Doc / Google Sheet / Markdown file / A person will do it by hand)
++
++If the answer to question 3 is **Yes** or **Not sure**, the request is treated as `restricted` and handled by a person, not by AI.
+diff --git a/templates/agent-policy.yaml b/templates/agent-policy.yaml
+new file mode 100644
+index 0000000..cbf4060
+--- /dev/null
++++ b/templates/agent-policy.yaml
+@@ -0,0 +1,14 @@
++# AgentPolicy: WHAT the agent is allowed to do. Safe defaults are already filled in.
++apiVersion: agents.cpintl.org/v1alpha1
++kind: AgentPolicy
++metadata:
++  name: internal-human-review
++  owner: "{responsible-role}"
++  description: "Internal information only. A person must approve the result."
++spec:
++  sensitivity: internal
++  network: deny-by-default
++  humanReviewRequired: true
++  allowExternalWrite: false
++  allowAiForRestrictedData: false
++  retentionDays: 30
+diff --git a/templates/agent-task.yaml b/templates/agent-task.yaml
+new file mode 100644
+index 0000000..9844a34
+--- /dev/null
++++ b/templates/agent-task.yaml
+@@ -0,0 +1,37 @@
++# AgentTask: WHAT the agent should do. Fill every "{...}" in plain language.
++# Where to edit: any text editor, Google Docs (paste as plain text), or the GitHub website pencil icon.
++apiVersion: agents.cpintl.org/v1alpha1
++kind: AgentTask
++metadata:
++  name: monthly-health-report
++  owner: "{responsible-role}"
++  description: "{one sentence describing the task}"
++spec:
++  objective: "{plain-language objective}"
++  brain: brains/doc-writer-agent.md
++  skills:
++    - skills/workspace-drive-search
++  prompt: prompts/library/evidence-summary.prompt
++  workspaceRef:
++    kind: AgentWorkspace
++    name: approved-reference-library
++  policyRef:
++    kind: AgentPolicy
++    name: internal-human-review
++  modelRef:
++    kind: ModelAdapter
++    name: manual-review-adapter
++  output:
++    format: google-docs
++    template: templates/google-docs-outline.md
++  lifecycle:
++    allowPause: true
++    allowResume: true
++status:
++  phase: created
++  conditions:
++    - type: SourceValidated
++      status: "Unknown"
++    - type: HumanApproval
++      status: "False"
++      reason: ReviewRequired
+diff --git a/templates/agent-template.yaml b/templates/agent-template.yaml
+new file mode 100644
+index 0000000..cf20191
+--- /dev/null
++++ b/templates/agent-template.yaml
+@@ -0,0 +1,23 @@
++# AgentTemplate: a reusable "recipe" for one kind of agent. It does not run by itself.
++apiVersion: agents.cpintl.org/v1alpha1
++kind: AgentTemplate
++metadata:
++  name: evidence-research-agent
++  owner: "{responsible-role}"
++  description: "Finds and summarizes approved evidence for a person to review."
++spec:
++  brain: brains/research-agent.md
++  skills:
++    - skills/workspace-drive-search
++  tools:
++    - name: approved-web-search
++      capability: search
++  workspace:
++    sources:
++      - "{approved-source-name}"
++  policy:
++    network: deny-by-default
++    sensitivity: internal
++    humanReviewRequired: true
++  persistence:
++    mode: cold-start
+diff --git a/templates/agent-workspace.yaml b/templates/agent-workspace.yaml
+new file mode 100644
+index 0000000..a103d28
+--- /dev/null
++++ b/templates/agent-workspace.yaml
+@@ -0,0 +1,23 @@
++# AgentWorkspace: WHAT context and tools the agent may use. Nothing outside this list.
++apiVersion: agents.cpintl.org/v1alpha1
++kind: AgentWorkspace
++metadata:
++  name: approved-reference-library
++  owner: "{responsible-role}"
++  description: "Approved sources for one task. Add sources only after a person approves them."
++spec:
++  sources:
++    - sourceId: program-policy
++      type: repository
++      locator: "cpintl-org/.agents@main:guardrails"
++      scope: "Read-only"
++      sensitivity: internal
++    - sourceId: reference-drive-folder
++      type: google_drive
++      locator: "{verified-drive-folder-id}"
++      scope: "One mapped folder only"
++      sensitivity: internal
++  tools:
++    - name: drive-metadata-search
++      capability: search
++      mode: read-only
+diff --git a/templates/checkpoint-policy.yaml b/templates/checkpoint-policy.yaml
+new file mode 100644
+index 0000000..04369b7
+--- /dev/null
++++ b/templates/checkpoint-policy.yaml
+@@ -0,0 +1,10 @@
++# CheckpointPolicy: when to save progress so a paused run can continue later.
++apiVersion: agents.cpintl.org/v1alpha1
++kind: CheckpointPolicy
++metadata:
++  name: save-on-pause
++spec:
++  mode: on-pause
++  keepLast: 3
++  containsRestrictedData: false
++  expiresAfterDays: 30
+diff --git a/templates/human-approval.yaml b/templates/human-approval.yaml
+new file mode 100644
+index 0000000..c965093
+--- /dev/null
++++ b/templates/human-approval.yaml
+@@ -0,0 +1,12 @@
++# HumanApproval: the person's decision. A run marked "needs review" stays paused until this exists.
++approvalId: approval-001
++runId: evidence-run-001
++decision: needs_changes
++reviewerRole: "{reviewer-role}"
++decidedOn: "2026-01-01"
++checklist:
++  sourcesChecked: false
++  noSensitiveDataExposed: false
++  factsMatchSources: false
++  readyToShare: false
++note: "{short plain note, no personal data}"
+diff --git a/templates/lifecycle-run.yaml b/templates/lifecycle-run.yaml
+new file mode 100644
+index 0000000..7dd282b
+--- /dev/null
++++ b/templates/lifecycle-run.yaml
+@@ -0,0 +1,23 @@
++# AgentInstance: ONE run of a template. The status block is the run's progress card.
++apiVersion: agents.cpintl.org/v1alpha1
++kind: AgentInstance
++metadata:
++  name: evidence-run-001
++  owner: "{responsible-role}"
++spec:
++  templateRef:
++    kind: AgentTemplate
++    name: evidence-research-agent
++  taskRef:
++    kind: AgentTask
++    name: monthly-health-report
++  runtime: manual
++status:
++  phase: waiting_for_review
++  conditions:
++    - type: SourceValidated
++      status: "True"
++    - type: HumanApproval
++      status: "False"
++      reason: ReviewRequired
++      message: "Waiting for a named reviewer."
+diff --git a/templates/model-adapter.yaml b/templates/model-adapter.yaml
+new file mode 100644
+index 0000000..3a148f6
+--- /dev/null
++++ b/templates/model-adapter.yaml
+@@ -0,0 +1,20 @@
++# ModelAdapter: WHICH AI provider and model to use. Change only this file to switch providers.
++# Never write a password, key, or token here. credentialRef is only the NAME of a secret kept elsewhere.
++apiVersion: agents.cpintl.org/v1alpha1
++kind: ModelAdapter
++metadata:
++  name: manual-review-adapter
++  owner: "{responsible-role}"
++  description: "No AI. The task becomes a checklist for a person."
++spec:
++  provider: manual-review
++  model: none
++  capabilities:
++    structuredOutput: false
++    vision: false
++    tools: false
++  limits:
++    contextTokens: "verify-at-runtime"
++    outputTokens: "verify-at-runtime"
++  verifiedOn: "{YYYY-MM-DD}"
++  extensions: {}
+-- 
+2.43.0
+

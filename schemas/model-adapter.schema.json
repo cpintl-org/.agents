@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModelAdapter: provider-neutral model settings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "agents.cpintl.org/v1alpha1"
+    },
+    "kind": {
+      "const": "ModelAdapter"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+        },
+        "owner": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "credentialRef": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Name of an approved secret. Never the secret itself."
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "structuredOutput": {
+              "type": "boolean"
+            },
+            "vision": {
+              "type": "boolean"
+            },
+            "tools": {
+              "type": "boolean"
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "contextTokens": {
+              "type": [
+                "integer",
+                "string"
+              ]
+            },
+            "outputTokens": {
+              "type": [
+                "integer",
+                "string"
+              ]
+            }
+          }
+        },
+        "verifiedOn": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Provider-specific settings live only here."
+        }
+      }
+    }
+  }
+}

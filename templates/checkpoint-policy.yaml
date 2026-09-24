@@ -1,0 +1,10 @@
+# CheckpointPolicy: when to save progress so a paused run can continue later.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: CheckpointPolicy
+metadata:
+  name: save-on-pause
+spec:
+  mode: on-pause
+  keepLast: 3
+  containsRestrictedData: false
+  expiresAfterDays: 30

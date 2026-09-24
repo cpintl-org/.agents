@@ -1,0 +1,45 @@
+# Providers you may want to use. This is a CHECKLIST, not a recommendation and not proof of
+# availability, price, quality, or privacy. Fill "verifiedOn" only after a person reads the
+# provider's current official terms. Unknown facts stay "verify".
+version: "1.0"
+status: draft
+defaults:
+  allowedForRestrictedData: false
+  manualFallback: manual-review
+providers:
+  - providerId: manual-review
+    displayName: "No AI (a person does the task)"
+    adapterFile: adapters/manual-review.yaml
+    costModel: none
+    dataUseNote: "No data leaves your control."
+    verifiedOn: "not-applicable"
+  - providerId: google-gemini
+    displayName: "Google Gemini (app or API)"
+    adapterFile: adapters/google-gemini.yaml
+    costModel: verify
+    dataUseNote: "verify: free-tier data-use terms"
+    verifiedOn: "{YYYY-MM-DD}"
+  - providerId: anthropic-claude
+    displayName: "Anthropic Claude (app or API)"
+    adapterFile: adapters/anthropic-claude.yaml
+    costModel: verify
+    dataUseNote: "verify: data-use terms for your plan"
+    verifiedOn: "{YYYY-MM-DD}"
+  - providerId: openai-compatible
+    displayName: "Any OpenAI-compatible service (for example OpenAI, Groq, DeepSeek, Mistral - verify each)"
+    adapterFile: adapters/openai-compatible.yaml
+    costModel: verify
+    dataUseNote: "verify: each service separately"
+    verifiedOn: "{YYYY-MM-DD}"
+  - providerId: local-model
+    displayName: "A model on your own computer (for example Gemma or MedGemma via a local runtime)"
+    adapterFile: adapters/local-model.yaml
+    costModel: "your own hardware"
+    dataUseNote: "Data stays on the machine, but the machine must be secured."
+    verifiedOn: "{YYYY-MM-DD}"
+  - providerId: coding-assistants
+    displayName: "Coding assistants (for example GitHub Copilot, Opencode) - use for editing files, not for restricted data"
+    adapterFile: adapters/openai-compatible.yaml
+    costModel: verify
+    dataUseNote: "verify: what the assistant sends to its provider"
+    verifiedOn: "{YYYY-MM-DD}"

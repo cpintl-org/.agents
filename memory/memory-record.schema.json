@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Memory record (with provenance)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "memoryId",
+    "summary",
+    "source",
+    "sensitivity",
+    "freshness",
+    "humanReview",
+    "createdAt"
+  ],
+  "properties": {
+    "memoryId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "uri",
+        "revision"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "repository",
+            "google_drive",
+            "google_sheet",
+            "url",
+            "manual"
+          ]
+        },
+        "uri": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "repositoryPath": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._/-]+$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        "revision": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "reviewed",
+        "approved"
+      ]
+    },
+    "freshness": {
+      "type": "string",
+      "enum": [
+        "current",
+        "stale",
+        "unknown",
+        "source_missing"
+      ]
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": [
+        "public",
+        "internal",
+        "restricted"
+      ]
+    },
+    "humanReview": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "required",
+        "approved"
+      ]
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

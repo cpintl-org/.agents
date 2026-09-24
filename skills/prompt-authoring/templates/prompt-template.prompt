@@ -1,0 +1,14 @@
+---
+name: my-new-prompt
+version: 1.0.0
+owner: "{responsible-role}"
+description: "{one plain sentence}"
+sensitivity: internal
+input_schema: schemas/my-new-prompt-input.json
+output_schema: schemas/my-new-prompt-output.json
+fixtures: fixtures/my-new-prompt.tests.yaml
+---
+Describe the task for {{topic}} in plain sentences.
+
+Mark missing information as UNKNOWN. Do not invent sources.
+A person must review the result before it is used.

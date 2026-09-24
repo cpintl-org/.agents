@@ -1,0 +1,23 @@
+# AgentWorkspace: WHAT context and tools the agent may use. Nothing outside this list.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentWorkspace
+metadata:
+  name: approved-reference-library
+  owner: "{responsible-role}"
+  description: "Approved sources for one task. Add sources only after a person approves them."
+spec:
+  sources:
+    - sourceId: program-policy
+      type: repository
+      locator: "cpintl-org/.agents@main:guardrails"
+      scope: "Read-only"
+      sensitivity: internal
+    - sourceId: reference-drive-folder
+      type: google_drive
+      locator: "{verified-drive-folder-id}"
+      scope: "One mapped folder only"
+      sensitivity: internal
+  tools:
+    - name: drive-metadata-search
+      capability: search
+      mode: read-only

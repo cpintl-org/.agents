@@ -1,0 +1,24 @@
+---
+name: evidence-summary
+version: 1.0.0
+owner: health-program-team
+description: Summarize approved evidence so a person can review it.
+sensitivity: internal
+input_schema: schemas/evidence-summary-input.json
+output_schema: schemas/evidence-summary-output.json
+fixtures: fixtures/evidence-summary.tests.yaml
+requires:
+  - web-research
+  - citation-formatting
+---
+Summarize the approved evidence for {{topic}}.
+{{#if audience}}
+Write for this audience: {{audience}}.
+{{/if}}
+
+Use only these approved sources:
+{{#each sources}}
+- {{this}}
+{{/each}}
+
+{{> evidence-rules}}

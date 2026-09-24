@@ -1,0 +1,11 @@
+{
+  "sourceId": "program-policy",
+  "type": "repository",
+  "locator": "cpintl-org/.agents@main:guardrails",
+  "sensitivity": "internal",
+  "ownerRole": "{owner-role}",
+  "approvedBy": "{approver-role}",
+  "approvedOn": "2026-01-01",
+  "excludePatterns": ["*.env", "*secret*"],
+  "reviewEveryDays": 90
+}

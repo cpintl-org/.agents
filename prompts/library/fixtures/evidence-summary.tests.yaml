@@ -1,0 +1,20 @@
+# Synthetic test cases only. Never put real people, patients, or case details here.
+cases:
+  - caseId: basic-topic
+    synthetic: true
+    input:
+      topic: "Example topic for testing"
+      sources:
+        - "Example source A (synthetic)"
+    expect:
+      outputMustValidate: true
+      mustInclude: ["UNKNOWN"]
+  - caseId: with-audience
+    synthetic: true
+    input:
+      topic: "Another example topic"
+      audience: "Program managers"
+      sources:
+        - "Example source B (synthetic)"
+    expect:
+      outputMustValidate: true

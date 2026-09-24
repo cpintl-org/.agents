@@ -1,0 +1,15 @@
+apiVersion: agents.cpintl.org/v1alpha1
+kind: ModelAdapter
+metadata:
+  name: manual-review-adapter
+  owner: "{responsible-role}"
+  description: "No AI. Creates a checklist task for a person. Safe default for restricted data."
+spec:
+  provider: manual-review
+  model: none
+  capabilities:
+    structuredOutput: false
+    vision: false
+    tools: false
+  verifiedOn: "not-applicable"
+  extensions: {}

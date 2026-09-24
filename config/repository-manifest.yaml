@@ -10,6 +10,11 @@ components:
   guardrails: guardrails
   templates: templates
   memory: memory
+  prompts: prompts
+  schemas: schemas
+  providers: providers
+  evaluation: evaluation
+  docs: docs
   workspaceBridge: workspace-bridge
   configuration: config
 validation:
@@ -18,6 +23,8 @@ validation:
   requiredChecks: [Validate skill packages]
   secretScanning: true
   schemaValidation: true
+  promptValidation: true
+  agentTemplateValidation: true
 providerPolicy:
   modelAgnostic: true
   noProviderRequired: true

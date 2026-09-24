@@ -1,0 +1,23 @@
+# AgentTemplate: a reusable "recipe" for one kind of agent. It does not run by itself.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentTemplate
+metadata:
+  name: evidence-research-agent
+  owner: "{responsible-role}"
+  description: "Finds and summarizes approved evidence for a person to review."
+spec:
+  brain: brains/research-agent.md
+  skills:
+    - skills/workspace-drive-search
+  tools:
+    - name: approved-web-search
+      capability: search
+  workspace:
+    sources:
+      - "{approved-source-name}"
+  policy:
+    network: deny-by-default
+    sensitivity: internal
+    humanReviewRequired: true
+  persistence:
+    mode: cold-start
