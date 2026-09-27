@@ -23,5 +23,12 @@ mainOnly:
   defaultBranch: main
   permanentBranches: [main]
   temporaryBranchPolicy: "Delete after merge or close; do not treat as a release channel."
+exceptions:
+  - name: ".agents"
+    profile: repository
+    reason: "Established GitHub repository name in cpintl-org. It starts with a dot, so it cannot match the repository profile. Renaming would break the live URL, the bridge GITHUB_REPOSITORY property, and every citation in docs. Accepted as-is; all future repositories must follow the profile."
+    exceptionStatus: accepted
+    recordedOn: "2026-09-27"
+    approvedBy: repository-maintainer
 review:
   requiredFields: [ownerRole, provider, visibility, sensitivity, lifecycle, exceptionStatus]

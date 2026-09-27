@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "agent-approvals CSV row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "approvalId",
+    "runId",
+    "decision",
+    "reviewerRole",
+    "decidedOn",
+    "sourcesChecked",
+    "noSensitiveDataExposed",
+    "factsMatchSources",
+    "readyToShare",
+    "note"
+  ],
+  "properties": {
+    "approvalId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["approved", "denied", "needs_changes", "pending"]
+    },
+    "reviewerRole": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "decidedOn": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}|{YYYY-MM-DD}$"
+    },
+    "sourcesChecked": {
+      "type": "string",
+      "pattern": "^(TRUE|FALSE)$"
+    },
+    "noSensitiveDataExposed": {
+      "type": "string",
+      "pattern": "^(TRUE|FALSE)$"
+    },
+    "factsMatchSources": {
+      "type": "string",
+      "pattern": "^(TRUE|FALSE)$"
+    },
+    "readyToShare": {
+      "type": "string",
+      "pattern": "^(TRUE|FALSE)$"
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 2000
+    }
+  }
+}

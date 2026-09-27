@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "agent-tasks CSV row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "taskId",
+    "requestedBy",
+    "objective",
+    "brain",
+    "workspaceId",
+    "policyId",
+    "modelId",
+    "outputFormat",
+    "status",
+    "createdOn"
+  ],
+  "properties": {
+    "taskId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "requestedBy": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "brain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "workspaceId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "policyId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "modelId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "outputFormat": {
+      "type": "string",
+      "enum": ["google-docs", "markdown", "csv", "json", "other"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["requested", "approved", "in-progress", "completed", "denied", "paused"]
+    },
+    "createdOn": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}|{YYYY-MM-DD}$"
+    }
+  }
+}

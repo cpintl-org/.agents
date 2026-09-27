@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "agent-workspaces CSV row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "workspaceId",
+    "sourceId",
+    "sourceType",
+    "locator",
+    "scope",
+    "sensitivity",
+    "approvedBy",
+    "approvedOn"
+  ],
+  "properties": {
+    "workspaceId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "sourceId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "sourceType": {
+      "type": "string",
+      "enum": ["repository", "drive", "web", "internal-system", "other"]
+    },
+    "locator": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["Read-only", "Read-write", "Deny", "Restricted"]
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": ["public", "internal", "restricted"]
+    },
+    "approvedBy": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "approvedOn": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}|{YYYY-MM-DD}$"
+    }
+  }
+}

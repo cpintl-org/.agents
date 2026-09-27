@@ -24,6 +24,8 @@ command, and explain each command in one plain sentence.
   control-panel CSVs · `prompts/` versioned `.prompt` files · `schemas/` neutral rulebooks
 - `schemas/csv/` + `schemas/scripts/` — control-panel CSV row schemas and the validators that
   prove the CSVs and committed data files obey their contracts
+- `scripts/validate-all.sh` — one-command local mirror of CI (same scripts, so a green local
+  run means CI will be green); run it before committing
 - `providers/` catalog + adapters · `memory/` read-only memory contracts · `evaluation/`
   rubrics + run records · `docs/` plain-language guides (start with `no-coder-maintenance.md`)
 - `plans/` — one folder per planned agent task (filled Task/Workspace/Policy/Model/Approval
@@ -50,23 +52,17 @@ command, and explain each command in one plain sentence.
   live promise (Gemini CLI pricing changed in June 2026; watch for similar drift).
 - `config/naming-policy.yaml` is the single source of truth for portable names. An established
   name that cannot change (e.g., `.agents`) is recorded there under `exceptions` with a written
-  reason — never silently skipped. (A repo-naming linter is in development; re-check its status
-  before assuming it runs.)
+  reason — never silently skipped; the repo-naming linter
+  (`skills/cpintl-org-writing-skill/scripts/validate_repo_naming.py`) enforces the policy and
+  runs in CI.
 
 ## Verify before committing
 
-Mirror of `.github/workflows/skill-validation.yml`, from the repo root:
+Mirror of `.github/workflows/skill-validation.yml`, from the repo root — one command
+runs every check (uses `python3` here; CI runners use `python`, override with `PYTHON=python`):
 
 ```bash
-python3 skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
-python3 skills/prompt-authoring/scripts/validate_prompts.py prompts/library
-python3 skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
-python3 skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
-python3 skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
-python3 skills/cpintl-org-brand/scripts/validate_brand_assets.py
-python3 schemas/scripts/validate_control_panel_csvs.py
-python3 schemas/scripts/validate_data_against_schemas.py
-node workspace-bridge/test-bridge.js
+bash scripts/validate-all.sh   # green here = CI green
 git diff --check
 ```
 

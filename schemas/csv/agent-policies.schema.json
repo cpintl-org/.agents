@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "agent-policies CSV row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policyId",
+    "sensitivity",
+    "network",
+    "humanReviewRequired",
+    "allowExternalWrite",
+    "allowAiForRestrictedData",
+    "retentionDays"
+  ],
+  "properties": {
+    "policyId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": ["public", "internal", "restricted"]
+    },
+    "network": {
+      "type": "string",
+      "enum": ["allow", "read-only", "deny-by-default"]
+    },
+    "humanReviewRequired": {
+      "type": "string",
+      "pattern": "^(TRUE|FALSE)$"
+    },
+    "allowExternalWrite": {
+      "type": "string",
+      "pattern": "^(TRUE|FALSE)$"
+    },
+    "allowAiForRestrictedData": {
+      "type": "string",
+      "pattern": "^(TRUE|FALSE)$"
+    },
+    "retentionDays": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

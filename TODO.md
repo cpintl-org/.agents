@@ -12,7 +12,8 @@
 - **Skills:** `skills/` contains eight reusable skills, bundled references, templates, and validators.
 - **Guardrails:** `guardrails/` contains security, retention, and adoption-boundary rules.
 - **Prompts:** `prompts/` contains the prompt convention, example prompts, shared partials, schemas, and synthetic fixtures.
-- **Schemas:** `schemas/` contains neutral task, workspace, policy, model, agent, approval, checkpoint, lifecycle, and run schemas.
+- **Schemas:** `schemas/` contains neutral task, workspace, policy, model, agent, approval, checkpoint, lifecycle, and run schemas; `schemas/csv/` holds the control-panel row schemas, and `schemas/scripts/` holds the shared validators (skill packages, CSVs, committed data, repo hygiene).
+- **Automation:** `scripts/validate-all.sh` runs every repository check in one command, mirroring `.github/workflows/skill-validation.yml` (both call the same scripts).
 - **Providers:** `providers/` contains provider catalog and adapters, including verified `manual-review` and `google-gemini`.
 - **Memory:** `memory/` contains read-only memory contracts, provenance/freshness schemas, registered pilot source, and short-term memory rules.
 - **Evaluation:** `evaluation/` contains schemas, a human-review rubric, example synthetic run records, and completed pilot evaluation reports.
@@ -33,6 +34,7 @@
 - [x] Offline behavioral test suite (`workspace-bridge/test-bridge.js`) passes all 11 critical path and security test cases.
 - [x] Low-risk baseline pilot completed: `cpi-technical-writing-guide` source registered, human review rubric evaluated, and evaluation report archived in `evaluation/reports/`.
 - [x] `cpintl-org-brand` skill reworked: Font Awesome Free 7.3.1 department icons vendored (CC BY 4.0 attributed, unmodified), 16 department badges generated, cover pages now generated on demand into gitignored `build/covers/` (never committed), and a standard-library-only 84-check asset validator added and wired into CI.
+- [x] Validation consolidated: control-panel CSVs validated against `schemas/csv/` row schemas, committed data files against their schemas, repository hygiene (JSON Schema legality, parse, secrets, unsafe paths, bridge safe defaults) unified in `schemas/scripts/`, the repo naming policy enforced by the writing-skill naming lint, and a one-command local runner (`scripts/validate-all.sh`) added that calls exactly the same scripts as CI.
 
 ---
 

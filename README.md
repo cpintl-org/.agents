@@ -96,6 +96,9 @@ The system is provider-agnostic. The same instructions may be used with Gemini, 
 │   ├── naming-policy.yaml
 │   ├── mcp-bridge-mapping.yaml
 │   └── repository-manifest.yaml
+├── scripts/
+│   └── validate-all.sh                 # One command runs every repository check
+├── plans/                              # One folder per planned agent task
 ├── docs/
 │   ├── no-coder-maintenance.md
 │   ├── plain-language-guide.md        # Words and steps, no jargon
@@ -121,6 +124,8 @@ The system is provider-agnostic. The same instructions may be used with Gemini, 
 │   ├── schemas/                        # Rules for the prompt header
 │   └── library/                        # Example prompt, shared pieces, schemas, test cases
 ├── schemas/                            # Neutral rulebooks: task, workspace, policy, model, run, lifecycle
+│   ├── csv/                            # Control-panel CSV row schemas
+│   └── scripts/                        # Shared validators (skill packages, CSVs, data, hygiene)
 ├── providers/
 │   ├── README.md
 │   ├── provider-catalog.yaml           # Checklist of providers (verify before use)
@@ -172,25 +177,31 @@ The repository rejects hardcoded secrets, unsafe paths, fabricated provider IDs,
 
 ## Validation
 
-The validation workflow runs on pull requests, pushes to `main`, manual runs, and a weekly schedule. It checks skill metadata and references, the free-resource evidence matrix, YAML/JSON structure, prompt files, agent task templates, model adapters, memory requests, likely secret patterns, unsafe paths, and whitespace. The workspace workflow validates the bridge mapping and skips external dispatch when secrets are not configured.
+The validation workflow runs on pull requests, pushes to `main`, manual runs, and a weekly schedule. It checks skill metadata and references, the naming policy, the free-resource evidence matrix, YAML/JSON structure, prompt files, agent task templates, model adapters, memory and bridge requests, control-panel CSVs, committed data files, likely secret patterns, unsafe paths, bridge safe defaults, and whitespace. The workspace workflow validates the bridge mapping and skips external dispatch when secrets are not configured.
 
-For local validation, run:
+The fastest way to check everything locally is the one-command runner — a local mirror of the same CI workflow:
+
+```bash
+bash scripts/validate-all.sh
+```
+
+On this machine use `python3` (`python` is the CI interpreter; the runner picks the right one automatically, and `PYTHON=python bash scripts/validate-all.sh` forces the CI-style interpreter). The same checks are also available individually:
 
 ```bash
 # Verify free resource matrix and bridge schema
-python skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
-python skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
+python3 skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
+python3 skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
 
 # Validate prompt library, agent YAML templates, and memory requests
-python skills/prompt-authoring/scripts/validate_prompts.py prompts/library
-python skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
-python skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
+python3 skills/prompt-authoring/scripts/validate_prompts.py prompts/library
+python3 skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
+python3 skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
 
 # Run offline bridge behavioral tests
 node workspace-bridge/test-bridge.js
 
 # Validate CPI brand skill assets (palette, 16 departments, Font Awesome icons, no stored covers)
-python skills/cpintl-org-brand/scripts/validate_brand_assets.py
+python3 skills/cpintl-org-brand/scripts/validate_brand_assets.py
 ```
 
 

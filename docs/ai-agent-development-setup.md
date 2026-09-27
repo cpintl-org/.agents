@@ -56,10 +56,14 @@ The [`AGENTS.md`](../AGENTS.md) file at the root of this monorepo is the univers
    - Use `adapters/google-gemini.yaml` when running with Google Gemini.
 
 3. **Step 3: Run Validation Locally**
-   Before sharing or executing, run the fast local checker:
+   Before sharing or executing, run the fast local checker. The one-command runner checks everything (it is the same set of scripts CI runs):
    ```bash
-   python skills/prompt-authoring/scripts/validate_prompts.py prompts/library
-   python skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
+   bash scripts/validate-all.sh
+   ```
+   Or run just the checks for the piece you changed:
+   ```bash
+   python3 skills/prompt-authoring/scripts/validate_prompts.py prompts/library
+   python3 skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
    node workspace-bridge/test-bridge.js
    ```
 

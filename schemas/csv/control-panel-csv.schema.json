@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Control panel CSVs",
+  "description": "Mapping of CSV filename to its row schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "agent-approvals.csv",
+    "agent-policies.csv",
+    "agent-runs.csv",
+    "agent-sources.csv",
+    "agent-tasks.csv",
+    "agent-workspaces.csv"
+  ],
+  "properties": {
+    "agent-approvals.csv": {
+      "$ref": "agent-approvals.schema.json"
+    },
+    "agent-policies.csv": {
+      "$ref": "agent-policies.schema.json"
+    },
+    "agent-runs.csv": {
+      "$ref": "agent-runs.schema.json"
+    },
+    "agent-sources.csv": {
+      "$ref": "agent-sources.schema.json"
+    },
+    "agent-tasks.csv": {
+      "$ref": "agent-tasks.schema.json"
+    },
+    "agent-workspaces.csv": {
+      "$ref": "agent-workspaces.schema.json"
+    }
+  }
+}

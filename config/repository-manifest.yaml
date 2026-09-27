@@ -17,6 +17,8 @@ components:
   docs: docs
   workspaceBridge: workspace-bridge
   configuration: config
+  plans: plans
+  scripts: scripts
 validation:
   workflow: .github/workflows/skill-validation.yml
   syncWorkflow: .github/workflows/workspace-sync.yml

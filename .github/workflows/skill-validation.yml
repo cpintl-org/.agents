@@ -38,34 +38,12 @@ jobs:
       - name: Install validation dependencies
         run: python -m pip install --disable-pip-version-check PyYAML jsonschema
 
-      - name: Validate skill metadata and references
-        shell: bash
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          skills=(skills/*/SKILL.md)
-          test "${#skills[@]}" -gt 0
-          for skill_file in "${skills[@]}"; do
-            skill_dir="${skill_file%/SKILL.md}"
-            python - <<'PY' "$skill_file"
-          import pathlib, sys, yaml
-          path = pathlib.Path(sys.argv[1])
-          text = path.read_text(encoding="utf-8")
-          if not text.startswith("---\n") or "\nname:" not in text or "\ndescription:" not in text:
-              raise SystemExit(f"invalid skill frontmatter: {path}")
-          if len(text.splitlines()) >= 500:
-              raise SystemExit(f"SKILL.md must remain under 500 lines: {path}")
-          yaml.safe_load(text.split("---\n", 2)[1])
-          print(f"metadata OK: {path}")
-          PY
-            while IFS= read -r ref; do
-              case "$ref" in
-                references/*|scripts/*|templates/*)
-                  test -e "$skill_dir/$ref" || { echo "missing bundled resource: $skill_dir/$ref"; exit 1; }
-                  ;;
-              esac
-            done < <(grep -oE '(references|scripts|templates)/[A-Za-z0-9_./-]+' "$skill_file" | sort -u || true)
-          done
+      # The same scripts the local one-command check runs, so the two agree.
+      - name: Validate skill metadata and bundled references
+        run: python schemas/scripts/validate_skill_packages.py
+
+      - name: Validate repository naming policy
+        run: python skills/cpintl-org-writing-skill/scripts/validate_repo_naming.py
 
       - name: Validate CPI brand skill assets
         run: python skills/cpintl-org-brand/scripts/validate_brand_assets.py
@@ -82,65 +60,25 @@ jobs:
       - name: Validate memory search request templates
         run: python skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
 
-      - name: Validate all JSON Schemas against Draft 2020-12
-        shell: bash
-        run: |
-          python - <<'PY'
-          import json, pathlib, sys, jsonschema
-          checked = 0
-          for root_dir in ['schemas', 'memory', 'evaluation', 'prompts']:
-              p = pathlib.Path(root_dir)
-              if not p.exists(): continue
-              for f in p.rglob('*.json'):
-                  try:
-                      data = json.loads(f.read_text(encoding='utf-8'))
-                  except Exception as exc:
-                      sys.exit(f"Failed to parse JSON file {f}: {exc}")
-                  if isinstance(data, dict) and ('$schema' in data or 'properties' in data or data.get('type') == 'object'):
-                      try:
-                          jsonschema.Draft202012Validator.check_schema(data)
-                          checked += 1
-                      except Exception as exc:
-                          sys.exit(f"Invalid JSON schema {f}: {exc}")
-          print(f"All {checked} JSON Schema files validated successfully against Draft 2020-12")
-          PY
+      - name: Validate bridge request fixture
+        run: python skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
+
+      - name: Validate writing-skill bundled resources
+        run: python skills/cpintl-org-writing-skill/scripts/validate_resources.py
+
+      - name: Validate control panel CSVs against their schemas
+        run: python schemas/scripts/validate_control_panel_csvs.py
+
+      - name: Validate committed data files against their schemas
+        run: python schemas/scripts/validate_data_against_schemas.py
+
+      # JSON Schema legality, YAML/JSON parsing, secret scan, unsafe paths, and
+      # the Workspace bridge safe defaults, in one shared script.
+      - name: Run repository hygiene checks
+        run: python schemas/scripts/validate_repo_hygiene.py
 
       - name: Run offline bridge behavioral tests
         run: node workspace-bridge/test-bridge.js
-
-      - name: Validate bridge fixture and structured files
-        run: |
-          python skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
-          python - <<'PY'
-          import json, pathlib, yaml
-          for path in pathlib.Path('.').rglob('*'):
-              if '.git' in path.parts or not path.is_file():
-                  continue
-              if path.suffix.lower() == '.json':
-                  json.loads(path.read_text(encoding='utf-8'))
-              elif path.suffix.lower() in {'.yaml', '.yml'}:
-                  yaml.safe_load(path.read_text(encoding='utf-8'))
-          print('all YAML and JSON files parsed successfully')
-          PY
-
-      - name: Check for secrets and unsafe paths
-        shell: bash
-        run: |
-          set -euo pipefail
-          if grep -RInE 'AKIA[0-9A-Z]{16}|BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{20,}' --exclude-dir=.git .; then
-            echo 'Potential credential pattern found in skills.'
-            exit 1
-          fi
-          if find . -path './.git' -prune -o -type f \( -name '*..*' -o -path '*/../*' \) -print | grep -q .; then
-            echo 'Unsafe traversal-like path found.'
-            exit 1
-          fi
-
-      - name: Check bridge defaults
-        run: |
-          grep -q 'DRY_RUN.*true' workspace-bridge/README.md
-          grep -q 'defaultMode: read-only' config/mcp-bridge-mapping.yaml
-          grep -q 'allowWrite: false' config/mcp-bridge-mapping.yaml
 
       - name: Check repository whitespace
         run: git diff --check
