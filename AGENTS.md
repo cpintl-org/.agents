@@ -91,6 +91,10 @@ secrets/unsafe-path scan.
 ## Working style
 
 - Small, reversible steps; explain what you're about to do before doing it.
+- Ariful reviews as a non-coder: anything human-facing must be plain words, Markdown tables
+  with explicit ☐ check/uncheck boxes, side-by-side comparisons, and a suggestions section —
+  never a raw dump of commands or YAML. Every planned task folder gets a `review-pack.md`
+  (what/how/where/verify) plus a fill-in `signoff-sheet.md` when someone must decide something.
 - Apps Script / Sheets / Drive automation follows patterns already validated in this repo's docs:
   `LockService` for concurrent writes, idempotent request IDs, self-scheduling triggers near the
   6-minute execution limit, metadata-as-code (`appProperties`) instead of hard-coded file IDs.

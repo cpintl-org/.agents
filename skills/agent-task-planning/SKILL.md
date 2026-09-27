@@ -13,9 +13,10 @@ Use this skill to turn a request in plain words into a small set of filled-in fi
 2. Classify sensitivity. If the work involves information about identifiable people, patients, or safeguarding cases, mark it `restricted` and plan a manual (no AI) route.
 3. Fill the five templates, in this order: Workspace (approved sources and tools), Policy (safe defaults), Model Adapter (start with `manual-review` if no provider is approved), Task (points to the other three by name), Human Approval (left as `needs_changes` until a person decides).
 4. Keep every value in the templates plain. Use placeholders such as `{responsible-role}` until a fact is verified.
-5. Check the files with the checker below and fix each message.
-6. Record the run's progress with the phases in `references/lifecycle-and-status.md`. Move to `waiting_for_review` before any result is shared.
-7. Never let an agent widen its own workspace, policy, or model. A person edits those files.
+5. Write a plain-language `review-pack.md` into the plan folder: what to check, how to check (no code), where the files are, a summary table, a check/uncheck decision table, and suggestions. Non-coders review from this file, not from the technical files. If leadership must decide something, give them a fill-in `signoff-sheet.md` with one row per decision (☐ Keep / ☐ Change) and mark any facts the source already fixes so only the genuinely open decisions get re-decided.
+6. Check the files with the checker below and fix each message.
+7. Record the run's progress with the phases in `references/lifecycle-and-status.md`. Move to `waiting_for_review` before any result is shared.
+8. Never let an agent widen its own workspace, policy, or model. A person edits those files.
 
 ## Check
 
