@@ -1,0 +1,12 @@
+# HumanApproval: the person's decision. Created while the decision is pending.
+approvalId: brand-accent-colors-signoff-approval-001
+runId: brand-accent-colors-signoff-run-001
+decision: needs_changes
+reviewerRole: "{leadership-reviewer-role}"
+decidedOn: "2026-09-27"
+checklist:
+  sourcesChecked: false
+  noSensitiveDataExposed: true
+  factsMatchSources: false
+  readyToShare: false
+note: "Record created while the decision is pending. Fill in the reviewer role and any requested changes to the accent-color grouping once leadership decides."

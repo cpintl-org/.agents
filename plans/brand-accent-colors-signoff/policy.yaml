@@ -1,0 +1,14 @@
+# AgentPolicy: what this run is allowed to do. Safe defaults already filled in.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentPolicy
+metadata:
+  name: internal-human-review
+  owner: "Health Program Manager"
+  description: "Internal information only. A named person approves the decision."
+spec:
+  sensitivity: internal
+  network: deny-by-default
+  humanReviewRequired: true
+  allowExternalWrite: false
+  allowAiForRestrictedData: false
+  retentionDays: 30

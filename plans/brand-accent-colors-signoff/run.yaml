@@ -1,0 +1,24 @@
+# AgentInstance: ONE run of the sign-off plan. The status block is the progress card.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentInstance
+metadata:
+  name: brand-accent-colors-signoff-run-001
+  owner: "Health Program Manager"
+spec:
+  templateRef:
+    kind: AgentTemplate
+    name: brand-accent-signoff-agent
+  taskRef:
+    kind: AgentTask
+    name: leadership-signoff-brand-accent-colors
+  runtime: manual
+status:
+  phase: created
+  conditions:
+    - type: SourceValidated
+      status: "Unknown"
+      reason: "brand-guide-pdf Drive folder not yet verified"
+    - type: HumanApproval
+      status: "False"
+      reason: ReviewRequired
+      message: "Waiting for CPI leadership to decide."

@@ -1,0 +1,17 @@
+# AgentTemplate: reusable recipe for one kind of sign-off task. It does not run by itself.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentTemplate
+metadata:
+  name: brand-accent-signoff-agent
+  owner: "Health Program Manager"
+  description: "Prepare the leadership sign-off brief for the CPI department accent-color mapping and record the decision."
+spec:
+  brain: brains/doc-writer-agent.md
+  skills:
+    - skills/cpintl-org-brand
+  policy:
+    network: deny-by-default
+    sensitivity: internal
+    humanReviewRequired: true
+  persistence:
+    mode: cold-start

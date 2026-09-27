@@ -22,8 +22,12 @@ command, and explain each command in one plain sentence.
   See `skills/README.md` for the index and package rules.
 - `brains/` role docs · `guardrails/` security/retention rules · `templates/` agent YAML +
   control-panel CSVs · `prompts/` versioned `.prompt` files · `schemas/` neutral rulebooks
+- `schemas/csv/` + `schemas/scripts/` — control-panel CSV row schemas and the validators that
+  prove the CSVs and committed data files obey their contracts
 - `providers/` catalog + adapters · `memory/` read-only memory contracts · `evaluation/`
   rubrics + run records · `docs/` plain-language guides (start with `no-coder-maintenance.md`)
+- `plans/` — one folder per planned agent task (filled Task/Workspace/Policy/Model/Approval
+  files, created with the `agent-task-planning` skill)
 - `workspace-bridge/` — optional Apps Script bridge. CI enforces `DRY_RUN ... true`,
   `defaultMode: read-only`, and `allowWrite: false`; write mode stays off until a human approves.
 - `config/` — `repository-manifest.yaml`, `mcp-bridge-mapping.yaml`, `naming-policy.yaml`.
@@ -44,6 +48,10 @@ command, and explain each command in one plain sentence.
 - No new AI providers, paid tiers, or software installs without asking first. Quotas/pricing must
   be re-verified at execution time — `references/free-resource-matrix.md` is dated evidence, not a
   live promise (Gemini CLI pricing changed in June 2026; watch for similar drift).
+- `config/naming-policy.yaml` is the single source of truth for portable names. An established
+  name that cannot change (e.g., `.agents`) is recorded there under `exceptions` with a written
+  reason — never silently skipped. (A repo-naming linter is in development; re-check its status
+  before assuming it runs.)
 
 ## Verify before committing
 
@@ -56,6 +64,8 @@ python3 skills/agent-task-planning/scripts/validate_agent_yaml.py templates prov
 python3 skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
 python3 skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
 python3 skills/cpintl-org-brand/scripts/validate_brand_assets.py
+python3 schemas/scripts/validate_control_panel_csvs.py
+python3 schemas/scripts/validate_data_against_schemas.py
 node workspace-bridge/test-bridge.js
 git diff --check
 ```

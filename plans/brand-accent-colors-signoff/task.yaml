@@ -1,0 +1,36 @@
+# AgentTask: what must happen before the branded templates can be rolled out.
+# This is a manual, human-decision task. No AI is used.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentTask
+metadata:
+  name: leadership-signoff-brand-accent-colors
+  owner: "Health Program Manager"
+  description: "Record CPI leadership's yes/no on the proposed department accent-color mapping before wide rollout of branded templates."
+spec:
+  objective: "Get an explicit decision from CPI Bangladesh leadership on which approved palette color each of the 16 department program codes should use, following the proposed grouping in skills/cpintl-org-brand/assets/colors/department-directory.json; present the proposal exactly as-is, state plainly that 14 of the 16 groupings are proposed (not stated in the brand guide) while WASH and Clean Energy are already fixed to CPI Blue/Teal by the guide, invent no facts, and record the decision in the Human Approval record."
+  brain: brains/doc-writer-agent.md
+  skills:
+    - skills/cpintl-org-brand
+  workspaceRef:
+    kind: AgentWorkspace
+    name: brand-accent-color-sources
+  policyRef:
+    kind: AgentPolicy
+    name: internal-human-review
+  modelRef:
+    kind: ModelAdapter
+    name: manual-review-adapter
+  output:
+    format: manual
+  lifecycle:
+    allowPause: true
+    allowResume: true
+status:
+  phase: created
+  conditions:
+    - type: SourceValidated
+      status: "Unknown"
+      reason: "brand-guide-pdf Drive folder not yet verified"
+    - type: HumanApproval
+      status: "False"
+      reason: ReviewRequired

@@ -1,0 +1,30 @@
+# AgentWorkspace: approved sources for the leadership sign-off task.
+# Nothing outside this list may be used. Add a source only after a person approves it.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: AgentWorkspace
+metadata:
+  name: brand-accent-color-sources
+  owner: "Health Program Manager"
+  description: "Approved sources for the CPI department accent-color sign-off task."
+spec:
+  sources:
+    - sourceId: brand-department-directory
+      type: repository
+      locator: "cpintl-org/.agents@main:skills/cpintl-org-brand/assets/colors/department-directory.json"
+      scope: "Read the proposed accent-color mapping and its reviewer note"
+      sensitivity: internal
+    - sourceId: cpi-palette
+      type: repository
+      locator: "cpintl-org/.agents@main:skills/cpintl-org-brand/assets/colors/cpi-palette.json"
+      scope: "Read the 7 approved palette colors"
+      sensitivity: internal
+    - sourceId: brand-skill-guide
+      type: repository
+      locator: "cpintl-org/.agents@main:skills/cpintl-org-brand/SKILL.md"
+      scope: "Read the brand rules and the known-gaps section"
+      sensitivity: internal
+    - sourceId: brand-guide-pdf
+      type: google_drive
+      locator: "{verified-drive-folder-id}"
+      scope: "Official CPI brand guide PDF, only if a person confirms the folder"
+      sensitivity: internal

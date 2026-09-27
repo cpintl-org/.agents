@@ -1,0 +1,17 @@
+# ModelAdapter: which AI provider and model. No keys, passwords, or tokens here.
+# This task is manual: a person prepares the brief and leadership decides.
+apiVersion: agents.cpintl.org/v1alpha1
+kind: ModelAdapter
+metadata:
+  name: manual-review-adapter
+  owner: "Health Program Manager"
+  description: "No AI. The task becomes a sign-off checklist for a person."
+spec:
+  provider: manual-review
+  model: none
+  capabilities:
+    structuredOutput: false
+    vision: false
+    tools: false
+  verifiedOn: "not-applicable"
+  extensions: {}
