@@ -1,12 +1,12 @@
-# HumanApproval: the person's decision. Created while the decision is pending.
+# HumanApproval: the person's decision.
 approvalId: brand-accent-colors-signoff-approval-001
 runId: brand-accent-colors-signoff-run-001
-decision: needs_changes
-reviewerRole: "{leadership-reviewer-role}"
+decision: approved
+reviewerRole: "Country Director"
 decidedOn: "2026-09-27"
 checklist:
-  sourcesChecked: false
+  sourcesChecked: true
   noSensitiveDataExposed: true
-  factsMatchSources: false
-  readyToShare: false
-note: "Record created while the decision is pending. Fill in the reviewer role and any requested changes to the accent-color grouping once leadership decides."
+  factsMatchSources: true
+  readyToShare: true
+note: "Country Director approved all 16 program-code accent colors as proposed on 2026-09-27. WASH and Clean Energy keep the guide-fixed CPI Blue/Teal; the 14 proposed mappings are approved as recorded in skills/cpintl-org-brand/assets/colors/department-directory.json."

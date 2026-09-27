@@ -26,11 +26,11 @@ spec:
     allowPause: true
     allowResume: true
 status:
-  phase: created
+  phase: completed
   conditions:
     - type: SourceValidated
       status: "Unknown"
       reason: "brand-guide-pdf Drive folder not yet verified"
     - type: HumanApproval
-      status: "False"
-      reason: ReviewRequired
+      status: "True"
+      reason: "Country Director approved all 16 accent colors on 2026-09-27"

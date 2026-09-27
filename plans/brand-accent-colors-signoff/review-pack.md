@@ -1,5 +1,8 @@
 # Leadership sign-off on brand colors — how to review (no code needed)
 
+> ✅ **DECISION RECORDED: All 16 program-code accent colors approved by the Country Director
+> on 2026-09-27.** This page and the sign-off sheet now show the final outcome.
+
 This file explains, in plain words, **what** this plan is, **what to check**, **how to check**,
 **where to check**, and **how to record the final decision**. The actual decision form you fill
 in is the separate file [`signoff-sheet.md`](./signoff-sheet.md).
@@ -68,12 +71,10 @@ That is the whole review: **read the sheet, tick the boxes, say yes or tell us w
 
 ---
 
-## 5. The one thing missing: the reviewer role
+## 5. Reviewer role — now filled in
 
-The plan folder has one placeholder that only you can fill in: the **reviewer's role**. It is
-written as `{leadership-reviewer-role}` (for example "Country Director" or "Programme Director").
-Tell the helper the correct role name and they will replace the placeholder. Until a real role
-is written down, the plan cannot be finalized — that is intentional.
+The reviewer role is recorded as **Country Director** (filled in on 2026-09-27). This was the
+last placeholder in the plan; with the decision recorded, the kit is complete.
 
 ---
 
@@ -108,14 +109,16 @@ Full details, row by row, are in [`signoff-sheet.md`](./signoff-sheet.md).
 
 ---
 
-## 8. After leadership decides — exactly what happens
+## 8. What happened after the decision
 
-1. The helper fills the reviewer role into the plan files.
-2. The helper records the decision in `human-approval.yaml` (approved or the requested changes).
-3. The run card (`run.yaml`) is updated to show the decision.
-4. If approved, the colors become the official mapping for branded templates; if changed, the
-   department directory is updated to the decided grouping first.
-5. The whole kit is re-checked with the repository's automatic checker before anything moves.
+1. The reviewer role was filled in as **Country Director** (2026-09-27).
+2. The decision — all 16 codes **approved** as proposed — was recorded in `human-approval.yaml`.
+3. The run card (`run.yaml`) was updated to **completed**.
+4. The sign-off sheet was ticked row by row (all ☑ Keep).
+5. The whole kit was re-checked with the repository's automatic checker before committing.
+
+Follow-up (not part of this sign-off): the approved mapping can now be used by branded
+templates; if a future change is needed, leadership re-signs a new sheet.
 
 ---
 
@@ -124,3 +127,4 @@ Full details, row by row, are in [`signoff-sheet.md`](./signoff-sheet.md).
 - [x] All 7 plan files match the repository's rulebook for plan files (checked with the plan checker on 2026-09-27).
 - [x] The 16 codes, the palette colors, and the 2 guide-fixed facts come from the actual data files (not from memory).
 - [x] No secrets, no personal data, no real Drive folder IDs anywhere in the kit.
+- [x] Decision recorded: approved by Country Director on 2026-09-27 (`human-approval.yaml`).
