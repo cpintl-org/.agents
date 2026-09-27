@@ -15,8 +15,11 @@ required = [
     root / 'references' / 'writing-style-guidance.md',
     root / 'references' / 'agent-skill-resources.md',
     root / 'references' / 'governance-and-validation.md',
+    root / 'references' / 'uri-naming-standard.md',
+    root / 'references' / 'standards-freshness-register.md',
     root / 'scripts' / 'validate_names.py',
     root / 'scripts' / 'generate_bridge_uri.py',
+    root / 'scripts' / 'check_standards_freshness.py',
 ]
 for path in required:
     if not path.exists():

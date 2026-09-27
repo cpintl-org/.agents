@@ -66,6 +66,9 @@ jobs:
       - name: Validate writing-skill bundled resources
         run: python skills/cpintl-org-writing-skill/scripts/validate_resources.py
 
+      - name: Check naming-standard freshness register
+        run: python skills/cpintl-org-writing-skill/scripts/check_standards_freshness.py
+
       - name: Validate control panel CSVs against their schemas
         run: python schemas/scripts/validate_control_panel_csvs.py
 

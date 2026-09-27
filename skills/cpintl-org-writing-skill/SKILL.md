@@ -19,6 +19,7 @@ Use this skill to produce consistent, portable, auditable names and technical co
 8. Do not invent organization members, repositories, projects, domains, Drive IDs, tokens, hashes, endpoints, or business meanings. Use placeholders such as `{organization}`, `{repository}`, `{resource-id}`, and `{mcp-server-url}`.
 9. Do not infer a domain-specific noun from a filename, repository name, or URL. Ask for clarification or retain a neutral placeholder.
 10. Write for a general agent: explain assumptions, cite sources when research is performed, and produce reproducible artifacts.
+11. Every name is a URI segment first and a display label second: pick the category (top-level folder) and the extension (actual format) before picking the words. See [references/uri-naming-standard.md](references/uri-naming-standard.md) for the decision rule and the `org/repo/category/specific-thing.extension` pattern this organization uses.
 
 ## Workflow
 
@@ -26,17 +27,23 @@ Use this skill to produce consistent, portable, auditable names and technical co
 
 Identify the provider, object type, scope, lifecycle, display label, machine slug, provider-issued ID, parent relationship, intended endpoint, audience, sensitivity, and output format. If any field is unknown, preserve it as a placeholder rather than guessing.
 
-### 2. Load only the relevant reference
+### 2. Decide the category and extension first
 
-- Read [references/portable-standard.md](references/portable-standard.md) for universal rules and grammars.
+Before picking words, use [references/uri-naming-standard.md](references/uri-naming-standard.md)'s decision table to settle which top-level category (`brains`, `skills`, `guardrails`, `templates`, `memory`, `prompts`, `providers`, `evaluation`, `schemas`, `docs`, `plans`, `config`, `workspace-bridge`, `scripts`) the object belongs in and which extension matches its actual format (not its subject). A file that doesn't fit an existing category belongs in one of them anyway — don't invent a new top-level folder for one file.
+
+### 3. Load only the relevant reference
+
+- Read [references/uri-naming-standard.md](references/uri-naming-standard.md) for the category/extension naming decision and worked examples.
+- Read [references/portable-standard.md](references/portable-standard.md) for universal character-level rules and grammars.
 - Read [references/github-standard.md](references/github-standard.md) for repositories, refs, trees, branches, tags, and GitHub APIs.
 - Read [references/workspace-standard.md](references/workspace-standard.md) for Drive and Workspace objects.
 - Read [references/api-mcp-standard.md](references/api-mcp-standard.md) for REST, OpenAPI, MCP, and bridge URIs.
 - Read [references/writing-style-guidance.md](references/writing-style-guidance.md) for technical-writing structure and Google-style source guidance.
 - Read [references/governance-and-validation.md](references/governance-and-validation.md) for CI, migration, exceptions, security, and review.
 - Read [references/agent-skill-resources.md](references/agent-skill-resources.md) when selecting or documenting reusable agent skills.
+- Read [references/standards-freshness-register.md](references/standards-freshness-register.md) before citing a version number for a URI/HTTP/TLS/JSON/MCP/A2A/AGENTS.md standard — it's the dated source of truth this skill relies on, and `scripts/check_standards_freshness.py` fails the repository's automatic checks once it's overdue for review.
 
-### 3. Select the profile
+### 4. Select the profile
 
 | Target | Default profile |
 |---|---|
@@ -51,20 +58,21 @@ Identify the provider, object type, scope, lifecycle, display label, machine slu
 | Workspace display label | human-readable structured title |
 | Technical document title | clear noun phrase, sentence case |
 
-### 4. Validate before producing or changing names
+### 5. Validate before producing or changing names
 
-Use the bundled validator:
+Use the bundled validators:
 
 ```bash
 python scripts/validate_names.py --kind repository cpintl-org-example-service
 python scripts/validate_names.py --kind branch feat/resource-index
 python scripts/validate_names.py --kind mcp-tool workspace.find_resource
 python scripts/validate_names.py --kind path docs/reference/index.md
+python scripts/check_standards_freshness.py
 ```
 
 For Git refs, also run `git check-ref-format --branch`. For endpoint work, validate component encoding and decode/encode round trips. Validation does not grant authorization and does not prove that a resource exists.
 
-### 5. Construct endpoints and MCP URIs
+### 6. Construct endpoints and MCP URIs
 
 Use the bundled bridge URI generator:
 
@@ -80,11 +88,11 @@ python scripts/generate_bridge_uri.py \
 
 Keep the repository, ref, repository path, Drive folder ID, and Drive display path as separate typed fields even when represented in one URI.
 
-### 6. Produce the requested artifact
+### 7. Produce the requested artifact
 
 Use templates from `templates/`:
 
-- `naming-policy.yaml`: configurable organization naming policy.
+- `naming-policy.yaml`: configurable organization naming policy, including the `categoryExtensions` table that mirrors `references/uri-naming-standard.md`.
 - `repository-layout.yaml`: neutral repository tree declaration.
 - `mcp-bridge-mapping.yaml`: GitHub-to-Workspace mapping.
 - `workspace-resource-record.json`: provider identity record.
@@ -112,7 +120,7 @@ Names can become shell arguments, filesystem paths, URLs, SQL identifiers, API s
 
 ## Completion checklist
 
-Before returning results, confirm that the output has no unexplained organization-specific nouns, no fabricated IDs or URLs, no secrets, no unused examples, no invalid YAML/JSON, and no script that has not been tested. Include a short assumptions section whenever the user did not specify the domain or resource model.
+Before returning results, confirm that the output has no unexplained organization-specific nouns, no fabricated IDs or URLs, no secrets, no unused examples, no invalid YAML/JSON, no stale version claim past its freshness-register review date, and no script that has not been tested. Include a short assumptions section whenever the user did not specify the domain or resource model.
 
 ## Related skills
 

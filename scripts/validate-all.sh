@@ -103,6 +103,9 @@ run_check "Workspace bridge request fixture" \
 run_check "Writing-skill bundled resources" \
   "${PY}" skills/cpintl-org-writing-skill/scripts/validate_resources.py
 
+run_check "Naming-standard freshness register" \
+  "${PY}" skills/cpintl-org-writing-skill/scripts/check_standards_freshness.py
+
 run_check "Control panel CSVs against schemas/csv/" \
   "${PY}" schemas/scripts/validate_control_panel_csvs.py
 

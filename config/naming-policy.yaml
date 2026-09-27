@@ -19,6 +19,27 @@ rules:
   preserveOpaqueProviderIds: true
   encodeUriComponentsIndependently: true
   forbidSecretsInNamesAndExamples: true
+# Documentation-only (not mechanically enforced by validate_repo_naming.py): the
+# org/repo/category/specific-thing.extension rule from
+# skills/cpintl-org-writing-skill/references/uri-naming-standard.md. `category` is
+# the top-level folder below; `extension` must match the file's actual format,
+# never its subject. Keep this table in sync with the copy in
+# skills/cpintl-org-writing-skill/templates/naming-policy.yaml.
+categoryExtensions:
+  brains: [".md"]
+  skills: ["SKILL.md", ".md"]
+  prompts: [".prompt"]
+  schemas: [".schema.json"]
+  templates: [".yaml", ".csv", ".json", ".md"]
+  memory: [".schema.json", ".json", ".md"]
+  providers: [".yaml"]
+  evaluation: [".schema.json", ".json", ".md", ".yaml"]
+  docs: [".md"]
+  plans: [".yaml", ".md"]
+  config: [".yaml"]
+  scripts: [".py", ".sh", ".gs", ".js"]
+  workspace-bridge: [".gs", ".json", ".md"]
+  workflows: [".yml"]
 mainOnly:
   defaultBranch: main
   permanentBranches: [main]

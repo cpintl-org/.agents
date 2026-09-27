@@ -27,6 +27,25 @@ rules:
   preserveOpaqueProviderIds: true
   encodeUriComponentsIndependently: true
   forbidSecretsInNamesAndExamples: true
+# The rule behind this table: org/repo/category/specific-thing.extension.
+# `category` is the top-level folder; `extension` must match the file's actual
+# format, never its subject. See references/uri-naming-standard.md for the
+# full decision table and worked examples this mirrors.
+categoryExtensions:
+  brains: [".md"]
+  skills: ["SKILL.md", ".md"]
+  prompts: [".prompt"]
+  schemas: [".schema.json"]
+  templates: [".yaml", ".csv", ".json", ".md"]
+  memory: [".schema.json", ".json", ".md"]
+  providers: [".yaml"]
+  evaluation: [".schema.json", ".json", ".md", ".yaml"]
+  docs: [".md"]
+  plans: [".yaml", ".md"]
+  config: [".yaml"]
+  scripts: [".py", ".sh", ".gs", ".js"]
+  workspace-bridge: [".gs", ".json", ".md"]
+  workflows: [".yml"]
 providerExceptions: []
 review:
   requiredFields:
