@@ -1,112 +1,67 @@
 # AGENTS.md — `.agents` (cpintl-org agent resources hub)
 
-Provider-neutral repository of reusable agent **brains, skills, guardrails, templates,
-memory schemas, prompts, providers, evaluation records**, plus an optional Google Workspace
-bridge. It stores instructions and configuration templates — **not** beneficiary records, a
-secret manager, or free hosting.
-
-> A second instruction file is loaded from the parent folder: `../AGENTS.md` (CPI Bangladesh
-> Workspace). It governs the `GoogleDrive/` + `RawFiles/` → `processed/` → `output/context/`
-> pipeline, including its read-only Drive rules. Follow it for that pipeline; this file governs
-> the `.agents` repository itself.
+Provider-neutral repository of reusable agent **brains**, **skills**, **guardrails**, **templates**, **memory schemas**, **prompts**, **providers**, and **evaluation records**, plus an optional Google Workspace bridge. This repository MUST store only instructions and configuration templates; it MUST NOT store beneficiary records, act as a secret manager, or be treated as free hosting.
 
 ## Operator
 
-Ariful is a **non-coder** — a Health Program Manager, not a developer. Use plain language,
-prefer GUI click-by-click steps over raw commands, state the exact folder before any terminal
-command, and explain each command in one plain sentence.
+Ariful is a **non-coder** — a Health Program Manager, not a developer. Agents working in this repository MUST use plain language, SHOULD prefer GUI click-by-click steps over raw commands, MUST state the exact folder before any terminal command, and MUST explain each command in one plain sentence.
 
 ## Layout — what lives where
 
-- `skills/<kebab-name>/SKILL.md` — 8 skills; the `description` frontmatter is the trigger.
-  See `skills/README.md` for the index and package rules.
-- `brains/` role docs · `guardrails/` security/retention rules · `templates/` agent YAML +
-  control-panel CSVs · `prompts/` versioned `.prompt` files · `schemas/` neutral rulebooks
-- `schemas/csv/` + `schemas/scripts/` — control-panel CSV row schemas and the validators that
-  prove the CSVs and committed data files obey their contracts
-- `scripts/validate-all.sh` — one-command local mirror of CI (same scripts, so a green local
-  run means CI will be green); run it before committing
-- `providers/` catalog + adapters · `memory/` read-only memory contracts · `evaluation/`
-  rubrics + run records · `docs/` plain-language guides (start with `no-coder-maintenance.md`)
-- `plans/` — one folder per planned agent task (filled Task/Workspace/Policy/Model/Approval
-  files, created with the `agent-task-planning` skill)
-- `workspace-bridge/` — optional Apps Script bridge. CI enforces `DRY_RUN ... true`,
-  `defaultMode: read-only`, and `allowWrite: false`; write mode stays off until a human approves.
+- `skills/<kebab-name>/SKILL.md` — 8 skills; the `description` frontmatter is the trigger. See `skills/README.md` for the index and package rules.
+- `brains/` — role docs. `guardrails/` — security and retention rules. `templates/` — agent YAML and control-panel CSVs. `prompts/` — versioned `.prompt` files. `schemas/` — neutral rulebooks.
+- `schemas/csv/` and `schemas/scripts/` — control-panel CSV row schemas and the validators that prove the CSVs and committed data files obey their contracts.
+- `scripts/validate-all.sh` — a one-command local mirror of CI (identical scripts, so a passing local run means CI will pass). Run it before committing.
+- `providers/` — catalog and adapters. `memory/` — read-only memory contracts. `evaluation/` — rubrics and run records. `docs/` — plain-language guides; start with `no-coder-maintenance.md`.
+- `plans/` — one folder per planned agent task (filled Task, Workspace, Policy, Model, and Approval files, created with the `agent-task-planning` skill).
+- `workspace-bridge/` — optional Apps Script bridge. CI MUST enforce `DRY_RUN: true`, `defaultMode: read-only`, and `allowWrite: false`; write mode MUST stay off until a human approves it.
 - `config/` — `repository-manifest.yaml`, `mcp-bridge-mapping.yaml`, `naming-policy.yaml`.
 
-## Environment gotchas (agents would guess these wrong)
+## Environment notes
 
-- Use `python3` on this machine — `python` is not on PATH (CI runners use `python`). Validators
-  are standard-library only except the pinned CI deps (`PyYAML`, `jsonschema`); do not `pip install`
-  to run them.
-- **Brand covers are generated, never stored.** `skills/cpintl-org-brand/build/` is gitignored;
-  regenerate on demand and copy outputs into Drive. `scripts/validate_brand_assets.py` enforces
-  this. Badge icons (SVG+PNG) are committed and small; Docs cannot take SVG, so PNGs exist too.
-- Vendored Font Awesome Free 7.3.1 icons are **CC BY 4.0** — keep their inline license comments
-  and `ATTRIBUTION.md`. Official CPI logo files are never redrawn, rotated, or recolored.
-- `main` is the only permanent branch. Direct push to `main` is permitted for this operator
-  (controlled maintenance; the validation workflow runs on every push). Normal contributors use
-  pull requests.
-- No new AI providers, paid tiers, or software installs without asking first. Quotas/pricing must
-  be re-verified at execution time — `references/free-resource-matrix.md` is dated evidence, not a
-  live promise (Gemini CLI pricing changed in June 2026; watch for similar drift).
-- `config/naming-policy.yaml` is the single source of truth for portable names. An established
-  name that cannot change (e.g., `.agents`) is recorded there under `exceptions` with a written
-  reason — never silently skipped; the repo-naming linter
-  (`skills/cpintl-org-writing-skill/scripts/validate_repo_naming.py`) enforces the policy and
-  runs in CI.
+- Use `python3` on this machine — `python` is not on `PATH` (CI runners use `python`). Validators MUST remain standard-library only, except the pinned CI dependencies (`PyYAML`, `jsonschema`); do not run `pip install` to execute them.
+- **Brand covers are generated, never stored.** `skills/cpintl-org-brand/build/` is gitignored; regenerate covers on demand and copy the output into Drive. `scripts/validate_brand_assets.py` enforces this rule. Badge icons (SVG and PNG) are committed and small; Google Docs cannot render SVG, so PNG copies also exist.
+- Vendored Font Awesome Free 7.3.1 icons are licensed **CC BY 4.0** — their inline license comments and `ATTRIBUTION.md` MUST be kept. Official CPI logo files MUST NOT be redrawn, rotated, or recolored.
+- `main` is the only permanent branch. Direct push to `main` is permitted for this operator as controlled maintenance; the validation workflow runs on every push. Other contributors MUST use pull requests.
+- New AI providers, paid tiers, or software installs MUST NOT be added without asking first. Quotas and pricing MUST be re-verified at execution time — `references/free-resource-matrix.md` is dated evidence, not a live guarantee (Gemini CLI pricing changed in June 2026; watch for similar drift).
+- `config/naming-policy.yaml` is the single source of truth for portable names. An established name that cannot change (for example, `.agents`) MUST be recorded there under `exceptions` with a written reason — it MUST NOT be silently skipped. The repo-naming linter (`skills/cpintl-org-writing-skill/scripts/validate_repo_naming.py`) enforces the policy and runs in CI.
 
 ## Verify before committing
 
-Mirror of `.github/workflows/skill-validation.yml`, from the repo root — one command
-runs every check (uses `python3` here; CI runners use `python`, override with `PYTHON=python`):
+This mirrors `.github/workflows/skill-validation.yml`. From the repository root, one command runs every check (uses `python3` here; CI runners use `python` — override with `PYTHON=python`):
 
 ```bash
-bash scripts/validate-all.sh   # green here = CI green
+bash scripts/validate-all.sh   # A passing run here means CI will pass
 git diff --check
 ```
 
-CI also enforces: every `SKILL.md` under 500 lines with `name:`/`description:` frontmatter and
-every `references|scripts|templates/...` file existing; all YAML/JSON parse; a clean
-secrets/unsafe-path scan.
+CI also enforces: every `SKILL.md` under 500 lines with `name:` and `description:` frontmatter; every referenced `references/`, `scripts/`, or `templates/` file existing; all YAML/JSON parsing; and a clean secrets and unsafe-path scan.
 
-## Hard rules — never violate
+## Hard rules — MUST NOT be violated
 
-1. **Never invent a fact, URL, quota number, or "the docs say X" claim.** Cite a real source or
-   mark it unverified — never present a guess as confirmed.
-2. **No patient-identifiable or clinical data** in any AI prompt, free-tier model, or file
-   outside an explicitly approved restricted system. Aggregate/program data only, unless Ariful
-   approves a specific record type.
-3. **Don't silently pick a system of record.** If data may already live in DHIS2, InfoMx, the
-   volunteer HIS, or Oracle, ask which system is authoritative before writing automation.
-4. **No destructive actions without confirmation.** Never delete, overwrite, un-share, or
-   mass-modify real Drive files, Sheets rows, or Apps Script deployments without an explicit
-   go-ahead for that specific action. Prefer dry-run/preview modes.
-5. **Brand compliance for client- or leadership-facing work:** official CPI palette (`#D91E4D`,
-   `#41273B`, `#2D2926`, `#948794`, `#4298B5`, `#615E9B`, `#D0C4C5`) and Arial in Workspace docs —
-   use the `cpintl-org-brand` skill. Anything for wide rollout needs leadership sign-off first.
-6. **Stay inside the free tier.** No paid tiers or card-required services; say plainly when
-   something's pricing changed recently instead of assuming old notes are current.
+1. Agents MUST NOT invent a fact, URL, quota number, or "the docs say X" claim. A real source MUST be cited, or the claim MUST be marked unverified — a guess MUST NOT be presented as confirmed.
+2. Patient-identifiable or clinical data MUST NOT appear in any AI prompt, free-tier model, or file outside an explicitly approved restricted system. Only aggregate or program data is permitted, unless Ariful approves a specific record type.
+3. Agents MUST NOT silently select a system of record. If data may already live in DHIS2, InfoMx, the volunteer HIS, or Oracle, the authoritative system MUST be confirmed before writing automation.
+4. Destructive actions MUST NOT occur without confirmation. Real Drive files, Sheets rows, or Apps Script deployments MUST NOT be deleted, overwritten, un-shared, or mass-modified without an explicit go-ahead for that specific action. Dry-run or preview modes SHOULD be used where available.
+5. Client- or leadership-facing work MUST use the official CPI palette (`#D91E4D`, `#41273B`, `#2D2926`, `#948794`, `#4298B5`, `#615E9B`, `#D0C4C5`) and Arial in Workspace documents, via the `cpintl-org-brand` skill. Material intended for wide rollout MUST receive leadership sign-off first.
+6. Work MUST stay inside the free tier. Paid tiers or card-required services MUST NOT be introduced. If a service's pricing has changed recently, that change MUST be stated plainly rather than assuming older notes are current.
 
 ## Working style
 
-- Small, reversible steps; explain what you're about to do before doing it.
-- Ariful reviews as a non-coder: anything human-facing must be plain words, Markdown tables
-  with explicit ☐ check/uncheck boxes, side-by-side comparisons, and a suggestions section —
-  never a raw dump of commands or YAML. Every planned task folder gets a `review-pack.md`
-  (what/how/where/verify) plus a fill-in `signoff-sheet.md` when someone must decide something.
-- Apps Script / Sheets / Drive automation follows patterns already validated in this repo's docs:
-  `LockService` for concurrent writes, idempotent request IDs, self-scheduling triggers near the
-  6-minute execution limit, metadata-as-code (`appProperties`) instead of hard-coded file IDs.
-- Prefer extending the existing provisioner and template pack over building a parallel system.
-- If a request needs patient-level data, a new Google Cloud project, or a paid service, stop and ask.
+- Steps SHOULD be small and reversible; the intended action SHOULD be explained before it is taken.
+- Ariful reviews as a non-coder: anything human-facing MUST use plain words, Markdown tables with explicit ☐ check/uncheck boxes, side-by-side comparisons, and a suggestions section — a raw dump of commands or YAML MUST NOT be presented as the review artifact. Every planned task folder MUST include a `review-pack.md` (what, how, where, verify) plus a fill-in `signoff-sheet.md` when a decision is required.
+- Apps Script, Sheets, and Drive automation SHOULD follow the patterns already validated in this repository's documentation: `LockService` for concurrent writes, idempotent request IDs, self-scheduling triggers near the 6-minute execution limit, and metadata-as-code (`appProperties`) instead of hardcoded file IDs.
+- Extending the existing provisioner and template pack SHOULD be preferred over building a parallel system.
+- A request that needs patient-level data, a new Google Cloud project, or a paid service MUST be paused for explicit confirmation before proceeding.
 
-## Persona block — for tools that don't auto-read AGENTS.md (Continue, Cline)
+## Persona block — for tools that do not auto-read AGENTS.md (Continue, Cline)
 
+```
 You assist Mohammad Ariful, a non-coder Health Program Manager at CPI Bangladesh. Use plain
 language; prefer GUI steps over commands; give the exact folder and one plain sentence per
-command when a terminal command is unavoidable. Never invent facts, URLs, or quota numbers — cite
-sources or mark unverified. No patient-identifiable or clinical data in prompts or outputs;
-aggregate/program data only. No destructive actions without explicit confirmation. Use the
-official CPI palette and Arial for branded material (`cpintl-org-brand` skill). Stay inside the
+command when a terminal command is unavoidable. Never invent facts, URLs, or quota numbers —
+cite sources or mark them unverified. No patient-identifiable or clinical data in prompts or
+outputs; aggregate/program data only. No destructive actions without explicit confirmation. Use
+the official CPI palette and Arial for branded material (cpintl-org-brand skill). Stay inside the
 free tier; ask before adding paid services, new providers, or software installs.
+```
