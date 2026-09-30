@@ -1,3 +1,7 @@
+# Security policy for cpintl-org/.agents.
+# Normative reading: `action: deny` = MUST NOT proceed; `action: require` /
+# `require_human_review` = MUST NOT proceed without the named evidence or
+# approval; `action: fallback` = MUST fall back to the named safe behavior.
 version: "1.0"
 policyId: "cpintl-org-agents-security-001"
 status: active
@@ -21,44 +25,56 @@ rules:
     action: deny
     patternNames: [api_key, access_token, refresh_token, password, private_key, service_account]
     locations: [git, prompts, logs, sheets, docs, issues, actions-artifacts]
+    notes: "Matched content MUST NOT be committed, logged, or included in generated output, regardless of location."
   - id: path-safety
     action: deny
     conditions: [path-traversal, control-character, reserved-name, case-only-collision]
+    notes: "A path matching any condition MUST be rejected before use."
   - id: least-privilege
     action: require
     evidence: [requested-scope, actor-role, provider-permission, expiry-or-review-date]
+    notes: "An access grant MUST NOT be created without recording all four evidence fields."
   - id: restricted-data
     action: require_human_review
     conditions: [external-ai, public-link, cross-organization-share, automated-publish]
+    notes: "Any of these conditions on restricted data MUST be paused for human review before proceeding."
   - id: destructive-actions
     action: require_human_review
     actions: [delete, revoke, overwrite, migrate, change-owner, change-billing, change-security]
+    notes: "Listed actions MUST NOT execute without a recorded human approval."
   - id: provider-failure
     action: fallback
     behavior: preserve-input-and-create-manual-task
+    notes: "On provider failure, the input MUST be preserved and a manual task MUST be created rather than the input being discarded."
   - id: memory-read-only-default
     action: require
     evidence: [registered-source, actor-role, bounded-result, revision-shown]
-    notes: "Memory operations are read-only. refresh_source is a dry run until a person approves."
+    notes: "Memory operations MUST remain read-only. refresh_source MUST run as a dry run until a person approves it."
   - id: no-arbitrary-queries
     action: deny
     conditions: [free-form-database-query, free-form-file-path, unbounded-search, automatic-indexing, cross-project-linking]
+    notes: "Any of these query patterns MUST NOT be executed against memory or Workspace sources."
   - id: memory-deletion
     action: require_human_review
     actions: [delete-memory, overwrite-memory, merge-sources]
+    notes: "These actions MUST NOT execute without a recorded human approval."
   - id: provider-settings-outside-prompts
     action: deny
     conditions: [provider-field-in-prompt, provider-field-in-task]
     fallback: move-to-model-adapter
+    notes: "A provider-specific field found in a prompt or task file MUST be moved to a Model Adapter instead."
   - id: free-tier-restricted-data
     action: deny
     conditions: [restricted-data-to-unverified-provider, restricted-data-to-free-tier-provider]
     fallback: manual-review-adapter
+    notes: "Restricted data MUST NOT be sent to an unverified or free-tier provider; the manual-review adapter MUST be used instead."
   - id: run-approval
     action: require_human_review
     conditions: [result-shared-externally, result-changes-a-record, result-assigns-a-person]
+    notes: "Any of these outcomes MUST be paused for human review before the run completes."
 logging:
   allowedFields: [auditId, operation, status, provider, model, redactionApplied, actorRole, timestamp]
   forbiddenFields: [prompt, rawResponse, beneficiaryId, healthData, token, credential]
+  notes: "Only allowedFields MAY be logged. A field listed in forbiddenFields MUST NOT appear in any log, regardless of source."
 exceptions:
-  process: "Record reason, scope, owner, expiry, compensating control, and approver in a decision record."
+  process: "An exception MUST record reason, scope, owner, expiry, compensating control, and approver in a decision record before it takes effect."

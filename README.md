@@ -1,57 +1,47 @@
-# `.agents` — cpintl-org Agent Resources Hub
+# `.agents` — cpintl-org agent resources hub
 
-`.agents` is a provider-neutral repository for reusable agent **brains**, **skills**, **guardrails**, **templates**, **memory schemas**, and Google Workspace bridge. It is designed for non-coders who can edit Google Docs, Google Drive, Markdown, or GitHub files. The repository stores instructions and configuration templates; it is not a database for beneficiary records, a secret manager, or a promise of unlimited free hosting.
+`.agents` is a provider-neutral repository for reusable agent **brains**, **skills**, **guardrails**, **templates**, **memory schemas**, and an optional Google Workspace bridge. It is designed for non-coders who can edit Google Docs, Google Drive, Markdown, or GitHub files. The repository MUST be used only for instructions and configuration templates. It MUST NOT be used as a database for beneficiary records, a secret manager, or a promise of unlimited free hosting.
 
-## What is This Hub?
+## What this hub is
 
-Think of ```.agents``` as a master AI Control Panel.
+`.agents` functions as a master AI control panel. Rather than locking an agent setup inside a single application, this repository acts as one universal storage unit: prompts, skills, and rules are written here and synchronized with Google Workspace (Docs, Sheets, Shared Drives). From here, the agent setup MAY connect to any AI provider — including Gemini, Google AI Studio, Claude, OpenAI, GitHub Copilot, DeepSeek, or local tools — without requiring the instructions to be rewritten.
 
-Instead of locking my AI setups inside a single app (like only using ChatGPT or only using Gemini), this repository acts as a single, universal storage unit. So any no coder can write my prompts, skills, and rules here, and they automatically sync with your Google Workspace (Docs, Sheets, Shared Drives).
-
-From here, you can connect your agent setup to any AI provider—including Gemini, Google AI Studio, Claude, OpenAI, GitHub Copilot, DeepSeek, or local tools—without ever re-writing your instructions!
-
-## How Everything Fits Together
-
-We structure everything like Lego Blocks. Each component does one specific job, and you can snap them together to build any AI agent you want!
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                              AGENT BRAIN                               │
-│                   (Personality, Role & Instructions)                   │
-└──────────────────┬─────────────────────────────────┬───────────────────┘
-                   │                                 │
-                   ▼                                 ▼
-┌─────────────────────────────────────┐   ┌──────────────────────────────┐
-│               SKILLS                │   │          GUARDRAILS          │
-│   (Tools, Actions & Capabilities)   │   │  (Safety Rules & Boundaries) │
-└──────────────────┬──────────────────┘   └──────────────┬───────────────┘
-                   │                                     │
-                   └──────────────────┬──────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                               TEMPLATES                                │
-│                     (Google Docs / Sheets Outputs)                     │
-└────────────────────────────────────────────────────────────────────────┘
-
-```
-
-## How GitHub & Google Workspace Connect in Real Time
-
-You don't need to manually copy and paste text between GitHub and Google Docs!
+## How the components fit together
 
 ```text
-┌────────────────────────┐      Webhook Signal     ┌────────────────────────┐
-│   GitHub (.agents)     │ ──────────────────────> │   Google Apps Script   │
-│  Edit Markdown File    │                         │   (workspace-bridge)   │
-└────────────────────────┘                         └───────────┬────────────┘
-                                                               │
-                                                               ▼
-                                                   ┌────────────────────────┐
-                                                   │   Google Shared Drive  │
-                                                   │  Real-Time Updated Doc │
-                                                   └────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                              AGENT BRAIN                               │
+│                   (Personality, role & instructions)                   │
+└──────────────────┬─────────────────────────────────┬───────────────────┘
+                    │                                 │
+                    ▼                                 ▼
+┌─────────────────────────────────────┐   ┌──────────────────────────────┐
+│               SKILLS                │   │          GUARDRAILS          │
+│   (Tools, actions & capabilities)   │   │  (Safety rules & boundaries) │
+└──────────────────┬──────────────────┘   └──────────────┬───────────────┘
+                    │                                     │
+                    └──────────────────┬──────────────────┘
+                                       │
+                                       ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                               TEMPLATES                                │
+│                     (Google Docs / Sheets outputs)                     │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
+## How GitHub and Google Workspace connect
+
+```text
+┌────────────────────────┐      Webhook signal      ┌────────────────────────┐
+│   GitHub (.agents)      │ ──────────────────────>  │   Google Apps Script   │
+│  Edit Markdown file     │                          │   (workspace-bridge)   │
+└────────────────────────┘                           └───────────┬────────────┘
+                                                                  │
+                                                                  ▼
+                                                      ┌────────────────────────┐
+                                                      │   Google shared drive   │
+                                                      │  Updated document copy │
+                                                      └────────────────────────┘
 ```
 
 ## Start here
@@ -64,7 +54,7 @@ You don't need to manually copy and paste text between GitHub and Google Docs!
 | Apply safety and privacy rules | [`guardrails/README.md`](guardrails/README.md) |
 | Produce a document or spreadsheet | [`templates/README.md`](templates/README.md) |
 | Understand context retention | [`memory/README.md`](memory/README.md) |
-| Configure GitHub-to-Workspace mapping | [`config/mcp-bridge-mapping.yaml`](config/mcp-bridge-mapping.yaml) |
+| Configure the GitHub-to-Workspace mapping | [`config/mcp-bridge-mapping.yaml`](config/mcp-bridge-mapping.yaml) |
 | Deploy the optional bridge | [`workspace-bridge/README.md`](workspace-bridge/README.md) |
 | Manage GitHub without coding | [`skills/github-repository-operations/SKILL.md`](skills/github-repository-operations/SKILL.md) |
 | Understand the agent layers in plain words | [`docs/plain-language-guide.md`](docs/plain-language-guide.md) |
@@ -76,11 +66,11 @@ You don't need to manually copy and paste text between GitHub and Google Docs!
 
 ## How the pieces fit together
 
-A **brain** defines an agent’s role and working method. A **skill** supplies a repeatable procedure. **Guardrails** define what is forbidden or requires review. **Templates** standardize outputs. **Memory** provides bounded, expiring context. The optional **workspace bridge** synchronizes approved repository paths with Google Drive after an owner deploys and configures it.
+A **brain** defines an agent's role and working method. A **skill** supplies a repeatable procedure. **Guardrails** define what is forbidden or requires review. **Templates** standardize outputs. **Memory** provides bounded, expiring context. The optional **workspace bridge** synchronizes approved repository paths with Google Drive after an owner deploys and configures it.
 
-Three newer layers make agent work safer and easier to repeat. **Prompt files** save a good instruction with declared inputs and outputs. **Task, Workspace, Policy, and Model Adapter** files say what to do, what may be used, what is allowed, and which AI (or a person) does it. **Provenance-aware memory** shows where every remembered fact came from and whether it is still current. **Evaluation** records how each run went. `docs/plain-language-guide.md` explains all of them without technical terms.
+Three additional layers support repeatable, auditable agent work. **Prompt files** save an instruction with declared inputs and outputs. **Task**, **Workspace**, **Policy**, and **Model Adapter** files declare what to do, what may be used, what is permitted, and which AI (or person) performs it. **Provenance-aware memory** records where a remembered fact came from and whether it remains current. **Evaluation** records how each run went. See [`docs/plain-language-guide.md`](docs/plain-language-guide.md) for a non-technical explanation of each layer.
 
-The system is provider-agnostic. The same instructions may be used with Gemini, Claude, OpenAI-compatible services, local models, or no model at all. A provider is never assumed to be available, free, private, or suitable for restricted data. Every integration must have a manual fallback.
+The system MUST remain provider-agnostic. The same instructions MAY be used with Gemini, Claude, OpenAI-compatible services, local models, or no model at all. A provider MUST NOT be assumed to be available, free, private, or suitable for restricted data. Every integration MUST have a manual fallback.
 
 ## Repository tree
 
@@ -97,12 +87,12 @@ The system is provider-agnostic. The same instructions may be used with Gemini, 
 │   ├── mcp-bridge-mapping.yaml
 │   └── repository-manifest.yaml
 ├── scripts/
-│   └── validate-all.sh                 # One command runs every repository check
+│   └── validate-all.sh                 # Runs every repository check in one command
 ├── plans/                              # One folder per planned agent task
 ├── docs/
 │   ├── no-coder-maintenance.md
-│   ├── plain-language-guide.md        # Words and steps, no jargon
-│   ├── roadmap.md                     # What is done, what is next
+│   ├── plain-language-guide.md         # Plain-language explanation of the agent layers
+│   ├── roadmap.md                      # Status of each build step
 │   └── configure-google-appsscript-workspace-bridge.md
 ├── brains/
 │   ├── README.md
@@ -110,48 +100,48 @@ The system is provider-agnostic. The same instructions may be used with Gemini, 
 │   └── doc-writer-agent.md
 ├── skills/
 │   ├── README.md
-│   ├── cpintl-org-writing-skill/       # Naming, structure, technical writing
-│   ├── cpintl-org-brand/               # CPI palette, logos, department icons, covers
+│   ├── cpintl-org-writing-skill/        # Naming, structure, technical writing
+│   ├── cpintl-org-brand/                # CPI palette, logos, department icons, covers
 │   ├── google-workspace-free-serverless/ # Quota-safe Workspace patterns
-│   ├── github-repository-operations/  # No-coder GitHub management
-│   ├── workspace-drive-search/         # Approved Drive search contract and validator
-│   ├── prompt-authoring/               # Write and check .prompt files
-│   ├── memory-search/                  # Read-only memory with source and freshness
-│   └── agent-task-planning/            # Fill Task, Workspace, Policy, Model, Approval
+│   ├── github-repository-operations/    # No-coder GitHub management
+│   ├── workspace-drive-search/          # Approved Drive search contract and validator
+│   ├── prompt-authoring/                # Write and check .prompt files
+│   ├── memory-search/                   # Read-only memory with source and freshness
+│   └── agent-task-planning/             # Fill Task, Workspace, Policy, Model, Approval
 ├── prompts/
 │   ├── README.md
 │   ├── diagnostics.md
-│   ├── schemas/                        # Rules for the prompt header
-│   └── library/                        # Example prompt, shared pieces, schemas, test cases
-├── schemas/                            # Neutral rulebooks: task, workspace, policy, model, run, lifecycle
-│   ├── csv/                            # Control-panel CSV row schemas
-│   └── scripts/                        # Shared validators (skill packages, CSVs, data, hygiene)
+│   ├── schemas/                         # Rules for the prompt header
+│   └── library/                         # Example prompt, shared pieces, schemas, test cases
+├── schemas/                             # Neutral rulebooks: task, workspace, policy, model, run, lifecycle
+│   ├── csv/                             # Control-panel CSV row schemas
+│   └── scripts/                         # Shared validators (skill packages, CSVs, data, hygiene)
 ├── providers/
 │   ├── README.md
-│   ├── provider-catalog.yaml           # Checklist of providers (verify before use)
-│   └── adapters/                       # One small file per provider, plus a no-AI default
+│   ├── provider-catalog.yaml            # Checklist of providers; verify before use
+│   └── adapters/                        # One file per provider, plus a no-AI default
 ├── guardrails/
 │   ├── README.md
 │   ├── security-rules.yaml
-│   ├── adoption-boundaries.md          # What we learn from and what we never copy
+│   ├── adoption-boundaries.md           # What is adopted and what is deliberately excluded
 │   └── data-retention-policy.md
 ├── templates/
 │   ├── README.md
 │   ├── google-docs-outline.md
 │   ├── google-sheets-schema.json
-│   ├── agent-task.yaml                 # Plain templates: task, workspace, policy,
-│   ├── agent-workspace.yaml            #   model adapter, agent template, run status,
-│   ├── ...                             #   checkpoint policy, human approval
-│   └── agent-control-panel/            # Google Sheets tabs (CSV) and a request form outline
+│   ├── agent-task.yaml                  # Task, workspace, policy,
+│   ├── agent-workspace.yaml             #   model adapter, agent template, run status,
+│   ├── ...                              #   checkpoint policy, human approval
+│   └── agent-control-panel/             # Google Sheets tabs (CSV) and a request form outline
 ├── memory/
 │   ├── README.md
 │   ├── provenance-and-freshness.md
 │   ├── short-term-memory-schema.json
-│   └── *.schema.json                   # memory record, search result, source, freshness
+│   └── *.schema.json                    # Memory record, search result, source, freshness
 ├── evaluation/
 │   ├── README.md
-│   ├── rubrics/                        # Human review checklist
-│   └── *.schema.json                   # test case, rubric, run record
+│   ├── rubrics/                         # Human review checklist
+│   └── *.schema.json                    # Test case, rubric, run record
 └── workspace-bridge/
     ├── README.md
     ├── appsscript.json
@@ -161,38 +151,38 @@ The system is provider-agnostic. The same instructions may be used with Gemini, 
 
 ## No-coder workflow
 
-Describe the desired outcome in plain language. A maintainer can prepare a temporary working branch, run checks, open a pull request, merge an approved change into `main`, and delete the temporary branch. The only permanent branch is `main`. Normal contributors should not push directly to it; an authorized administrator may bypass the rule only for controlled recovery or testing.
+Describe the desired outcome in plain language. A maintainer MAY prepare a temporary working branch, run checks, open a pull request, merge an approved change into `main`, and delete the temporary branch. `main` MUST be the only permanent branch. Contributors SHOULD use a pull request rather than push directly to `main`; an authorized administrator MAY bypass this rule only for controlled recovery or testing.
 
-When adding a brain, define role, goal, inputs, boundaries, evidence, output, and escalation. When adding a skill, create a lowercase kebab-case folder with a concise `SKILL.md`; move detailed material into references and reusable structures into templates. When adding a guardrail, state the data class, prohibited action, approval requirement, and fallback. When adding a template, keep facts out of it and retain placeholders until verified.
+When adding a brain, the definition MUST state role, goal, inputs, boundaries, evidence, output, and escalation. When adding a skill, create a lowercase kebab-case folder with a concise `SKILL.md`; move detailed material into references and reusable structures into templates. When adding a guardrail, state the data class, prohibited action, approval requirement, and fallback. When adding a template, the template MUST NOT contain facts; it MUST retain placeholders until a value is verified.
 
-## Workspace bridge reality
+## Workspace bridge status
 
-The bridge is optional and is not automatically active merely because `workspace-bridge/` exists. The owner must deploy Apps Script, set Script Properties, verify the Drive folder IDs, configure GitHub secrets, run a synthetic dry-run, and approve any write mode. The default bridge mapping is read-only and uses placeholders. Without an endpoint and secrets, the sync workflow intentionally skips external delivery.
+The bridge is optional and MUST NOT be assumed active merely because `workspace-bridge/` exists. The owner MUST deploy Apps Script, set Script Properties, verify the Drive folder IDs, configure GitHub secrets, run a synthetic dry-run, and approve any write mode before the bridge processes real data. The default bridge mapping is read-only and uses placeholders. Without an endpoint and secrets, the sync workflow MUST intentionally skip external delivery.
 
-The bridge should be treated as event-assisted synchronization, not a guaranteed real-time or enterprise service. GitHub remains the canonical source for repository files. Drive is a mapped copy or working view. Do not store secrets, restricted case data, health information, or OAuth tokens in this repository.
+The bridge SHOULD be treated as event-assisted synchronization, not a guaranteed real-time or enterprise service. GitHub remains the canonical source for repository files; Drive is a mapped copy or working view. Secrets, restricted case data, health information, and OAuth tokens MUST NOT be stored in this repository.
 
 ## Security and provider independence
 
-The repository rejects hardcoded secrets, unsafe paths, fabricated provider IDs, unrestricted external writes, and unreviewed destructive actions. See [`SECURITY.md`](SECURITY.md) and [`guardrails/security-rules.yaml`](guardrails/security-rules.yaml). AI is optional: redact data first, use approved providers only, require human review for consequential outputs, and preserve a no-AI path.
+The repository MUST reject hardcoded secrets, unsafe paths, fabricated provider IDs, unrestricted external writes, and unreviewed destructive actions — see [`SECURITY.md`](SECURITY.md) and [`guardrails/security-rules.yaml`](guardrails/security-rules.yaml). AI use is optional: data MUST be redacted first, only approved providers MAY be used, consequential outputs MUST require human review, and a no-AI path MUST be preserved.
 
 ## Validation
 
-The validation workflow runs on pull requests, pushes to `main`, manual runs, and a weekly schedule. It checks skill metadata and references, the naming policy, the free-resource evidence matrix, YAML/JSON structure, prompt files, agent task templates, model adapters, memory and bridge requests, control-panel CSVs, committed data files, likely secret patterns, unsafe paths, bridge safe defaults, and whitespace. The workspace workflow validates the bridge mapping and skips external dispatch when secrets are not configured.
+The validation workflow runs on pull requests, pushes to `main`, manual runs, and a weekly schedule. It checks skill metadata and references, the naming policy, the free-resource evidence matrix, YAML/JSON structure, prompt files, agent task templates, model adapters, memory and bridge requests, control-panel CSVs, committed data files, secret patterns, unsafe paths, bridge safe defaults, and whitespace. The workspace sync workflow validates the bridge mapping and MUST skip external dispatch when secrets are not configured.
 
-The fastest way to check everything locally is the one-command runner — a local mirror of the same CI workflow:
+Run every check locally with one command, which mirrors the CI workflow:
 
 ```bash
 bash scripts/validate-all.sh
 ```
 
-On this machine use `python3` (`python` is the CI interpreter; the runner picks the right one automatically, and `PYTHON=python bash scripts/validate-all.sh` forces the CI-style interpreter). The same checks are also available individually:
+On this machine, use `python3` (`python` is the CI interpreter; the runner selects the correct one automatically; `PYTHON=python bash scripts/validate-all.sh` forces the CI-style interpreter). The same checks are also available individually:
 
 ```bash
-# Verify free resource matrix and bridge schema
+# Verify the free-resource matrix and bridge schema
 python3 skills/google-workspace-free-serverless/scripts/verify_free_matrix.py skills/google-workspace-free-serverless/references/free-resource-matrix.md
 python3 skills/workspace-drive-search/scripts/validate_bridge_request.py skills/workspace-drive-search/references/example-request.json
 
-# Validate prompt library, agent YAML templates, and memory requests
+# Validate the prompt library, agent YAML templates, and memory requests
 python3 skills/prompt-authoring/scripts/validate_prompts.py prompts/library
 python3 skills/agent-task-planning/scripts/validate_agent_yaml.py templates providers/adapters
 python3 skills/memory-search/scripts/validate_memory_request.py skills/memory-search/templates/memory-search-request.json
@@ -204,9 +194,8 @@ node workspace-bridge/test-bridge.js
 python3 skills/cpintl-org-brand/scripts/validate_brand_assets.py
 ```
 
-
 ## Assumptions and boundaries
 
-This repository intentionally uses placeholders for Google Drive folder IDs, Apps Script project IDs, tokens, domains, and Workspace roles. Current quotas, pricing, model availability, provider data-use terms, and API behavior must be verified at execution time. A green repository check proves structure and policy checks passed; it does not grant external authorization, prove a Drive mapping exists, or certify a production deployment.
+This repository intentionally uses placeholders for Google Drive folder IDs, Apps Script project IDs, tokens, domains, and Workspace roles. Current quotas, pricing, model availability, provider data-use terms, and API behavior MUST be verified at execution time. A passing repository check proves structure and policy checks passed; it does not grant external authorization, prove a Drive mapping exists, or certify a production deployment.
 
 Maintained by `cpintl-org` as a provider-neutral, no-coder agent resource hub.
