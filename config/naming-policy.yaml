@@ -6,6 +6,7 @@ profiles:
   repository: "^[a-z0-9](?:[a-z0-9-]{0,98}[a-z0-9])?$"
   directory: "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
   branch: "^(feat|fix|docs|chore|refactor|test|build|release)/[a-z0-9][a-z0-9-]{0,62}$"
+  tag: "^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$"
   environmentVariable: "^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$"
   mcpTool: "^[a-z][a-z0-9_]{0,127}$"
   portablePath: "^[a-z0-9][a-z0-9._-]{0,62}$"
@@ -19,37 +20,25 @@ rules:
   preserveOpaqueProviderIds: true
   encodeUriComponentsIndependently: true
   forbidSecretsInNamesAndExamples: true
-# Documentation-only (not mechanically enforced by validate_repo_naming.py): the
-# org/repo/category/specific-thing.extension rule from
-# skills/cpintl-org-writing-skill/references/uri-naming-standard.md. `category` is
-# the top-level folder below; `extension` must match the file's actual format,
-# never its subject. Keep this table in sync with the copy in
-# skills/cpintl-org-writing-skill/templates/naming-policy.yaml.
-categoryExtensions:
-  brains: [".md"]
-  skills: ["SKILL.md", ".md"]
-  prompts: [".prompt"]
-  schemas: [".schema.json"]
-  templates: [".yaml", ".csv", ".json", ".md"]
-  memory: [".schema.json", ".json", ".md"]
-  providers: [".yaml"]
-  evaluation: [".schema.json", ".json", ".md", ".yaml"]
-  docs: [".md"]
-  plans: [".yaml", ".md"]
-  config: [".yaml"]
-  scripts: [".py", ".sh", ".gs", ".js"]
-  workspace-bridge: [".gs", ".json", ".md"]
-  workflows: [".yml"]
+  repositoryNameMustNotStartWithDot: true
 mainOnly:
   defaultBranch: main
   permanentBranches: [main]
   temporaryBranchPolicy: "Delete after merge or close; do not treat as a release channel."
-exceptions:
-  - name: ".agents"
-    profile: repository
-    reason: "Established GitHub repository name in cpintl-org. It starts with a dot, so it cannot match the repository profile. Renaming would break the live URL, the bridge GITHUB_REPOSITORY property, and every citation in docs. Accepted as-is; all future repositories must follow the profile."
-    exceptionStatus: accepted
-    recordedOn: "2026-09-27"
-    approvedBy: repository-maintainer
+# Names a platform dictates. These are not exceptions to our rules; they are
+# provider rules, which always win (see writing-skill principle 7).
+providerRequiredNames:
+  - name: ".github"
+    scope: "organization profile repository"
+    reason: "GitHub requires this exact name for organization-wide profile and default files."
+fileConventions:        # documented now; not yet enforced by the checker
+  toolRequired: [README.md, AGENTS.md, SKILL.md, LICENSE, SECURITY.md, CONTRIBUTING.md, CHANGELOG.md]
+  appsScript: ["Code.gs", "appsscript.json", "clasp.json"]
+  python: "snake_case.py"
+  documentsOutsideGit: "CPI-BGD-{ProgramCode}-{DocumentType}-{YYYYMM}-v{Version}.{ext}"
+standards:
+  verifiedOn: "UNVERIFIED"   # fill after checking each official page; do not guess
+  toCheck: [github, google-drive, agent-skills, agents-md, mcp, a2a, rfc-8615]
+exceptions: []
 review:
   requiredFields: [ownerRole, provider, visibility, sensitivity, lifecycle, exceptionStatus]
