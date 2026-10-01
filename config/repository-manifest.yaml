@@ -1,7 +1,7 @@
 version: "1.0"
 repository:
   owner: cpintl-org
-  name: .agents
+  name: agent-hub
   defaultRef: main
   operatingModel: main-only
 components:
